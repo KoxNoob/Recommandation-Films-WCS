@@ -562,9 +562,6 @@ if vue == 'Focus sur un film':
                         textcoords="offset points",
                         ha='center', va='bottom', color='white')
 
-
-    # ax.axhline(y=avg, linewidth=2, color='y')
-
     autolabel(rects1)
     autolabel(rects2)
 
@@ -573,11 +570,6 @@ if vue == 'Focus sur un film':
     fig.tight_layout()
 
     st.pyplot(fig, use_container_width=True)
-
-    import plotly.graph_objects as go
-
-
-
     # TOP 3 des films du même genre
 
     mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
