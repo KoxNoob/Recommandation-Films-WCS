@@ -3,14 +3,14 @@ import pandas as pd
 import streamlit as st
 import numpy as np
 import time
-import altair as alt
 import matplotlib.pyplot as plt
 import seaborn as sns
-from matplotlib.ticker import MultipleLocator
 import requests
 from sklearn.neighbors import NearestNeighbors
 import plotly.express as px
+import plotly.graph_objects as go
 
+read_and_cache_csv = st.cache(pd.read_csv)
 sns.set()
 st.sidebar.image(
     'https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/Screenshot%20from%202020-05-13%2014-30-59.png?raw=true',
@@ -417,15 +417,90 @@ if vue == 'Statistiques Générales':
 
 
     df_movies = csv('https://raw.githubusercontent.com/KoxNoob/Recommandation-Films-WCS/master/df_movies.csv')
+    pays = pd.read_csv('https://raw.githubusercontent.com/KoxNoob/Recommandation-Films-WCS/master/df_country.csv')
+
+    # fusion avec df_movies
+    df_movies = df_movies.merge(pays, how='inner', on='imdb_title_id')
+    df_movies.drop(columns=['Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'year_y', 'duration_y', 'avg_vote'],
+                   inplace=True)
+    df_movies.rename(columns={'year_x': 'year', 'duration_x': 'duration'}, inplace=True)
+
+    # extraction du premier pays
+    df_movies['country'].fillna(value='unknown', inplace=True)
+
+    c1 = []
+    for index, value in df_movies['country'].items():
+        x = value.split(',')
+        z = x[0]
+        z = z.rstrip(',')
+        c1.append(z)
+
+    df_movies['country_1'] = c1
+    df_movies['pays'] = c1
+
+    # données sur les iso alpha 3 pour visualisation carte
+    iso_alpha = pd.read_csv(
+        'https://gist.githubusercontent.com/tadast/8827699/raw/0d1f2d2524bc2df23c92fe306956935391665b0e/countries_codes_and_coordinates.csv')
+    iso_alpha = iso_alpha[['Country', 'Alpha-3 code', 'Latitude (average)', 'Longitude (average)']]
+    iso_alpha = iso_alpha.apply(lambda x: x.str.rstrip('"'))
+    iso_alpha = iso_alpha.apply(lambda x: x.str.lstrip(' "'))
+    iso_alpha['Latitude (average)'] = iso_alpha['Latitude (average)'].astype('float')
+    iso_alpha['Longitude (average)'] = iso_alpha['Longitude (average)'].astype('float')
+
+    for index, value in df_movies['country_1'].items():
+        if value == 'USA':
+            df_movies['country_1'].iat[index] = 'United States'
+        if value == 'UK':
+            df_movies['country_1'].iat[index] = 'United Kingdom'
+        if value == 'East Germany' or value == 'West Germany':
+            df_movies['country_1'].iat[index] = 'Germany'
+        if value == 'Soviet Union':
+            df_movies['country_1'].iat[index] = 'Russian Federation'
+        if value == 'Isle Of Man':
+            df_movies['country_1'].iat[index] = 'Isle of Man'
+        if value == 'Czechoslovakia':
+            df_movies['country_1'].iat[index] = 'Czech Republic'
+        if value == 'Iran':
+            df_movies['country_1'].iat[index] = 'Iran, Islamic Republic of'
+        if value == 'Palestine':
+            df_movies['country_1'].iat[index] = 'Palestinian Territory, Occupied'
+        if value == 'Yugoslavia':
+            df_movies['country_1'].iat[index] = 'Serbia'
+        if value == 'The Democratic Republic Of Congo':
+            df_movies['country_1'].iat[index] = 'Congo, the Democratic Republic of the'
+        if value == 'Federal Republic of Yugoslavia':
+            df_movies['country_1'].iat[index] = 'Montenegro'
+        if value == 'North Korea':
+            df_movies['country_1'].iat[index] = "Korea, Democratic People's Republic of"
+        if value == 'Republic of Macedonia':
+            df_movies['country_1'].iat[index] = 'Macedonia, the former Yugoslav Republic of'
+        if value == 'Syria':
+            df_movies['country_1'].iat[index] = 'Syrian Arab Republic'
+
+    # fusion avec pays
+    df_movies = df_movies.merge(iso_alpha, how='left', left_on='country_1', right_on='Country')
+
+    # supression du doublon
+    df_movies.drop(columns='Country', inplace=True)
+
 
     st.markdown('# Quelques Statistiques Générales')
     # Pie chart de la répartition des films par genre
     movies_genre = pd.DataFrame(df_movies.groupby(['genre 1'])['imdb_title_id'].count()).reset_index()
     movies_genre.rename(columns={'genre 1': 'Genre', 'imdb_title_id': 'Nombre de films'}, inplace=True)
-    fig = px.pie(movies_genre, values='Nombre de films', names='Genre',
-                 title='Répartition du nombre de films par genre', color_discrete_sequence=px.colors.sequential.Reds_r)
+    movies_genre['Sous_genre'] = movies_genre['Genre']
+    movies_genre.loc[movies_genre['Nombre de films'] < 1000, 'Genre'] = "Divers"
+    fig = px.pie(movies_genre, values='Nombre de films', names='Genre', title='Répartition des films par genre',
+                 color_discrete_sequence=px.colors.sequential.Reds_r, template="plotly_dark")
     fig.update_layout(title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, showlegend=False)
-    fig.update_traces(textposition='inside')
+    fig.update_traces(textposition='inside', textinfo='label+percent')
+    st.plotly_chart(fig, use_container_width=True)
+
+    fig = px.pie(movies_genre[movies_genre['Genre'] == 'Divers'], values='Nombre de films', names='Sous_genre',
+                 title='Répartition des genres dans les films classés "Divers"',
+                 color_discrete_sequence=px.colors.sequential.Reds_r, template="plotly_dark")
+    fig.update_layout(title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, showlegend=False)
+    fig.update_traces(textposition='inside', textinfo='label+percent')
     st.plotly_chart(fig, use_container_width=True)
 
     # Var chart sur l'évolution de la production cinématographique annuelle
@@ -437,6 +512,24 @@ if vue == 'Statistiques Générales':
     fig.update_traces(marker_color='red')
     fig.update_layout(title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, yaxis_title="nombre de films",
                       xaxis_title="")
+    st.plotly_chart(fig, use_container_width=True)
+
+
+    # Map 3D sur le nombre de films par pays
+    moviesByCountry = pd.DataFrame(df_movies.groupby(['Alpha-3 code', 'pays'])['imdb_title_id'].count())
+    moviesByCountry.rename(columns={'imdb_title_id': 'Nombre de films'}, inplace=True)
+    moviesByCountry.reset_index(inplace=True)
+
+    fig = px.scatter_geo(moviesByCountry, title='Production cinématographique mondiale', locations="Alpha-3 code",
+                         size="Nombre de films", size_max=60, template="plotly_dark", hover_name="pays",
+                         projection="orthographic")
+
+    fig.update_layout(title={'y': 0.95, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, showlegend=True, width=600,
+                      height=600, font=dict(color='white', size=18))
+
+    fig.update_geos(showcountries=True, countrycolor="#292929", coastlinecolor="grey")
+
+    fig.update_traces(marker=dict(color='red'))
     st.plotly_chart(fig, use_container_width=True)
 
 if vue == 'Focus sur un film':
@@ -508,17 +601,66 @@ if vue == 'Focus sur un film':
     # Durée du film
     mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
     mov_duree = df_movies[df_movies['imdb_title_id'] == mov_imdb]['duration'].values[0]
-    fig, ax = plt.subplots()
-    x = 0
-    y = 0
-    circle = plt.Circle((x, y), radius=1, facecolor='black', edgecolor=(1, 0, 0), linewidth=3)
-    ax.add_patch(circle)
-    label = ax.annotate(mov_duree, xy=(x, y), fontsize=45, ha="center", va='center', color='white')
-    plt.title('Durée (min)', fontsize=20, fontdict={'verticalalignment': 'baseline', 'horizontalalignment': 'center'})
-    ax.set_aspect('equal')
-    ax.autoscale_view()
-    plt.axis('off')
-    st.pyplot(fig, use_container_width=True)
+
+    fig = go.Figure()
+
+    # Set axes properties
+    fig.update_xaxes(range=[0, 1], zeroline=False)
+    fig.update_yaxes(range=[0, 1])
+
+    fig.update_layout(
+        shapes=[
+            # filled circle
+            dict(
+                type="circle",
+                xref="x",
+                yref="y",
+                fillcolor="black",
+                x0=0.1,
+                y0=0.1,
+                x1=0.99,
+                y1=0.99,
+                line=dict(
+                    color="red",
+                    width=3
+                )
+            )
+        ]
+    )
+    fig.update_xaxes(
+        showticklabels=False,
+        showgrid=False,
+        zeroline=False,
+    )
+    fig.update_yaxes(
+        showticklabels=False,
+        showgrid=False,
+        zeroline=False,
+    )
+
+    # Set figure size
+    fig.update_layout(width=600, height=600, plot_bgcolor="white")
+
+    fig.update_layout(
+        showlegend=False,
+        annotations=[
+            dict(
+                x=0.54,
+                y=0.54,
+                xref="x",
+                yref="y",
+                text=str(mov_duree),
+                showarrow=False, font_size=130, font_color='white'
+            )
+        ]
+    )
+
+    fig.update_layout(title_text='Durée (min)', title={'y': 0.92, 'x': 0.54, 'xanchor': 'center', 'yanchor': 'top'},
+                      font=dict(
+                          size=24,
+                          color="black"))
+
+    st.plotly_chart(fig, use_container_width=True)
 
     # Notes du film sélectionné par sexe et par tranches d'âge
     st.markdown('### Note moyenne en fonction du genre et de la classe d\'âge')
@@ -536,40 +678,19 @@ if vue == 'Focus sur un film':
     men_means = [m_18, m_30, m_45]
     women_means = [f_18, f_30, f_45]
 
-    x = np.arange(len(labels))  # the label locations
-    width = 0.35  # the width of the bars
+    fig = go.Figure(data=[
+        go.Bar(name='Hommes', x=labels, y=men_means, marker_color='white', text=men_means, textposition='outside'),
+        go.Bar(name='Femmes', x=labels, y=women_means, marker_color='red', text=women_means, textposition='outside')
+    ])
 
-    fig, ax = plt.subplots(figsize=(12, 6))
-    rects1 = ax.bar(x - width / 2, men_means, width, label='Hommes', color='white', edgecolor='black')
-    rects2 = ax.bar(x + width / 2, women_means, width, label='Femmes', color='#db0000', edgecolor='black')
+    fig.update_layout(template="plotly_dark", title_text='Note moyennne en fonction du genre et de la classe d\'âge',
+                      title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'})
 
-    # Add some text for labels, title and custom x-axis tick labels, etc.
+    # Change the bar mode
+    fig.update_layout(barmode='group')
+    fig.update_yaxes(range=[0, 10])
+    st.plotly_chart(fig, use_container_width=True)
 
-    ax.set_ylabel('Note')
-    ax.set_xticks(x)
-    ax.set_xticklabels(labels)
-    ax.legend(loc=(1.04, 0))
-    ax.set_ylim(0, 10)
-
-
-    def autolabel(rects):
-        """Attach a text label above each bar in *rects*, displaying its height."""
-        for rect in rects:
-            height = rect.get_height()
-            ax.annotate('{}'.format(height),
-                        xy=(rect.get_x() + rect.get_width() / 2, height),
-                        xytext=(0, 3),  # 3 points vertical offset
-                        textcoords="offset points",
-                        ha='center', va='bottom', color='white')
-
-    autolabel(rects1)
-    autolabel(rects2)
-
-    ax.patch.set_facecolor('black')
-
-    fig.tight_layout()
-
-    st.pyplot(fig, use_container_width=True)
     # TOP 3 des films du même genre
 
     mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
@@ -583,6 +704,19 @@ if vue == 'Focus sur un film':
                      inplace=True)
     parsed_list, poster1, poster2, poster3 = list_parser(list(Top_genre['imdb_title_id'].unique()))
     st.markdown('# Top 3 des films du même genre : ' + str(mov_genre1))
+    fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4, 5],
+                                   columnwidth=[8, 50, 50, 20, 10],
+                                   header=dict(values=['', 'Titre', 'Réalisateur', 'Année', 'Note'], fill_color='red',
+                                               line=dict(width=2), font=dict(color='white', size=14)),
+                                   cells=dict(
+                                       values=[[1, 2, 3], Top_genre.Titre, Top_genre.Réalisateur, Top_genre.Année,
+                                               Top_genre.Note],
+                                       fill_color=['red', 'black'], line=dict(width=2), font=dict(color='white'),
+                                       height=30))])
+
+    fig.update_layout(width=1200, height=300)
+    st.plotly_chart(fig, use_container_width=True)
+
     st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[0, 1]) + " (" + \
                 str(Top_genre.iloc[0, 3]) + ")" "</h2>", unsafe_allow_html=True)
     st.markdown('<p align="center"><img width="150" height="220" src=' + poster1 + "</p>", unsafe_allow_html=True)
@@ -617,6 +751,16 @@ if vue == 'Focus sur un film':
     parsed_list, poster1, poster2, poster3 = list_parser(list(Top_year['imdb_title_id'].unique()))
 
     st.markdown('# Top 3 des films de la même année : ' + str(mov_year))
+    fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4],
+                                   columnwidth=[8, 50, 50, 10],
+                                   header=dict(values=['', 'Titre', 'Réalisateur', 'Note'], fill_color='red',
+                                               line=dict(width=2), font=dict(color='white', size=14)),
+                                   cells=dict(values=[[1, 2, 3], Top_year.Titre, Top_year.Réalisateur, Top_year.Note],
+                                              fill_color=['red', 'black'], font=dict(color='white', size=[14, 12]),
+                                              line=dict(width=2), height=30))])
+
+    fig.update_layout(width=1200, height=300)
+    st.plotly_chart(fig, use_container_width=True)
     st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[0, 1]) + " (" + \
                 str(Top_year.iloc[0, 3]) + ")" "</h2>", unsafe_allow_html=True)
     st.markdown('<p align="center"><img width="150" height="220" src=' + poster1 + "</p>", unsafe_allow_html=True)
