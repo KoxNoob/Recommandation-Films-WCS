@@ -20,11 +20,9 @@ vue = st.sidebar.radio(
     ('Accueil', 'Recommandations', 'Statistiques Générales', 'Focus sur un film'), 0)
 
 if vue == 'Accueil':
-    st.markdown('<body style="background-color:black;">', unsafe_allow_html=True)
-    st.image('https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/accueil_1.jpeg?raw=true', width=650)
     st.image('https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/accueil_2.jpeg?raw=true', width=650)
-    st.markdown('Toi aussi tu es à court d\'idée ? Alors passe à la partie __Recommandations__, nous allons t\'aider !')
-    st.markdown('</body>', unsafe_allow_html=True)
+    st.markdown('Toi aussi tu es à court d\'idée ? Tu ne sais plus quoi regarder ? Alors passe à la partie __Recommandations__, nous allons t\'aider !')
+
 if vue == 'Recommandations':
     st.markdown("<h3 style='text-align: center; color: grey; size = 0'>Maintenant que vous êtes bien installés, il n'y a plus qu'à rentrer \
              vos préférences dans la barre de naviguation à gauche, et laissez nous faire !</h3>",
@@ -34,7 +32,8 @@ if vue == 'Recommandations':
                                    'Tiens, et si tu allais te chercher une bière ? Ou du popcorn ? Non ? Tu as raison, tout est prêt, voici notre sélection ! ', \
                                    'Il va falloir choisir Néo. La pilule bleue, ou la pilule rouge ?', 'Il s\'appelle Juste le Blanc. Son prénom c\'est \
                             Juste, et son nom c\'est le Blanc.', 'Que la force de la recommandation soit avec toi !', 'Non pas toi Obélix, tu \
-                                es tombé dedans quand tu étais petit !'])
+                                es tombé dedans quand tu étais petit !',"Vers l'infini et au-delà", "La vie c’est comme une boîte de chocolats, on ne sait jamais sur quoi on va tomber.",\
+                            "Partout où il y a grandeur, grandeur du souverain ou du pouvoir et même de la pensée et des passions, l'erreur elle aussi est grande."])
     with st.spinner(attente):
         time.sleep(8)
     st.success('Tadam !')
@@ -364,9 +363,21 @@ if vue == 'Recommandations':
     reco = reco.drop(['imdb_title_id'], axis=1).reset_index(drop=True)
     reco.index = reco.index + 1
 
-    st.write(reco.iloc[display_min:display_max, :5].style.set_properties(
-        **{'background-color': 'black', 'color': 'red', 'font-weight': 'bold', 'border-color': 'red'}).set_table_styles(
-        [{'selector': 'th', 'props': [('color', 'red')]}]))
+    #st.write(reco.iloc[display_min:display_max, :5].style.set_properties(
+     #   **{'background-color': 'black', 'color': 'red', 'font-weight': 'bold', 'border-color': 'red'}).set_table_styles(
+      #  [{'selector': 'th', 'props': [('color', 'red')]}]))
+
+    fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4, 5, 6],
+                                   columnwidth=[10, 50, 15, 20, 10, 10],
+                                   header=dict(values=['N°', 'Titre', 'Année', 'Genre','Note', "Durée"],
+                                               fill_color='red', line=dict(width=2), font=dict(color='white', size=14)),
+                                   cells=dict(values=[reco.index.values[display_min:display_max], reco.Titre.values[display_min:display_max],\
+                                                      reco.Année.values[display_min:display_max], reco.Genre.values[display_min:display_max], \
+                                                      reco.Note.values[display_min:display_max], reco.Durée.values[display_min:display_max]],
+                                              fill_color=['red', 'black'], font=dict(color='white', size=[14, 12]),
+                                              line=dict(width=2), height=30))])
+    fig.update_layout(width=1200, height=500)
+    st.plotly_chart(fig, use_container_width=True)
 
 # CI film n°1
     st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(reco.iloc[display_min + 0, 0]) + " (" + \
@@ -483,54 +494,55 @@ if vue == 'Statistiques Générales':
     # supression du doublon
     df_movies.drop(columns='Country', inplace=True)
 
-
-    st.markdown('# Quelques Statistiques Générales')
+    st.markdown("<h2 style='text-align: center; color: black; size = 0'>Quelques statistiques générales</h2>", unsafe_allow_html=True)
     # Pie chart de la répartition des films par genre
-    movies_genre = pd.DataFrame(df_movies.groupby(['genre 1'])['imdb_title_id'].count()).reset_index()
-    movies_genre.rename(columns={'genre 1': 'Genre', 'imdb_title_id': 'Nombre de films'}, inplace=True)
-    movies_genre['Sous_genre'] = movies_genre['Genre']
-    movies_genre.loc[movies_genre['Nombre de films'] < 1000, 'Genre'] = "Divers"
-    fig = px.pie(movies_genre, values='Nombre de films', names='Genre', title='Répartition des films par genre',
-                 color_discrete_sequence=px.colors.sequential.Reds_r, template="plotly_dark")
-    fig.update_layout(title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, showlegend=False)
-    fig.update_traces(textposition='inside', textinfo='label+percent')
-    st.plotly_chart(fig, use_container_width=True)
+    stat_gene = st.sidebar.selectbox("Statistiques à afficher", ("Répartition des films par genre", "Production cinématographique"))
+    if stat_gene == "Répartition des films par genre":
+        movies_genre = pd.DataFrame(df_movies.groupby(['genre 1'])['imdb_title_id'].count()).reset_index()
+        movies_genre.rename(columns={'genre 1': 'Genre', 'imdb_title_id': 'Nombre de films'}, inplace=True)
+        movies_genre['Sous_genre'] = movies_genre['Genre']
+        movies_genre.loc[movies_genre['Nombre de films'] < 1000, 'Genre'] = "Divers"
+        fig = px.pie(movies_genre, values='Nombre de films', names='Genre', title='Répartition des films par genre',
+                     color_discrete_sequence=px.colors.sequential.Reds_r, template="plotly_dark")
+        fig.update_layout(title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, showlegend=False)
+        fig.update_traces(textposition='inside', textinfo='label+percent')
+        st.plotly_chart(fig, use_container_width=True)
 
-    fig = px.pie(movies_genre[movies_genre['Genre'] == 'Divers'], values='Nombre de films', names='Sous_genre',
-                 title='Répartition des genres dans les films classés "Divers"',
-                 color_discrete_sequence=px.colors.sequential.Reds_r, template="plotly_dark")
-    fig.update_layout(title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, showlegend=False)
-    fig.update_traces(textposition='inside', textinfo='label+percent')
-    st.plotly_chart(fig, use_container_width=True)
+        fig = px.pie(movies_genre[movies_genre['Genre'] == 'Divers'], values='Nombre de films', names='Sous_genre',
+                     title='Répartition des genres dans les films classés "Divers"',
+                     color_discrete_sequence=px.colors.sequential.Reds_r, template="plotly_dark")
+        fig.update_layout(title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, showlegend=False)
+        fig.update_traces(textposition='inside', textinfo='label+percent')
+        st.plotly_chart(fig, use_container_width=True)
+    else :
+        # Bar chart sur l'évolution de la production cinématographique annuelle
+        moviesByYear = pd.DataFrame(df_movies.groupby(['year'])['imdb_title_id'].count())
+        moviesByYear.reset_index(inplace=True)
+        moviesByYear.rename(columns={'year': 'Année', 'imdb_title_id': 'Nombre de films'}, inplace=True)
+        fig = px.bar(moviesByYear, x='Année', y='Nombre de films', template="plotly_dark",
+                     title='Evolution de la production cinématographique annuelle')
+        fig.update_traces(marker_color='red')
+        fig.update_layout(title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top','font' :  {'size' : 24}}, yaxis_title="nombre de films",
+                          xaxis_title="")
+        st.plotly_chart(fig, use_container_width=True)
 
-    # Var chart sur l'évolution de la production cinématographique annuelle
-    moviesByYear = pd.DataFrame(df_movies.groupby(['year'])['imdb_title_id'].count())
-    moviesByYear.reset_index(inplace=True)
-    moviesByYear.rename(columns={'year': 'Année', 'imdb_title_id': 'Nombre de films'}, inplace=True)
-    fig = px.bar(moviesByYear, x='Année', y='Nombre de films', template="plotly_dark",
-                 title='Evolution de la production cinématographique annuelle')
-    fig.update_traces(marker_color='red')
-    fig.update_layout(title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, yaxis_title="nombre de films",
-                      xaxis_title="")
-    st.plotly_chart(fig, use_container_width=True)
 
+        # Map 3D sur le nombre de films par pays
+        moviesByCountry = pd.DataFrame(df_movies.groupby(['Alpha-3 code', 'pays'])['imdb_title_id'].count())
+        moviesByCountry.rename(columns={'imdb_title_id': 'Nombre de films'}, inplace=True)
+        moviesByCountry.reset_index(inplace=True)
 
-    # Map 3D sur le nombre de films par pays
-    moviesByCountry = pd.DataFrame(df_movies.groupby(['Alpha-3 code', 'pays'])['imdb_title_id'].count())
-    moviesByCountry.rename(columns={'imdb_title_id': 'Nombre de films'}, inplace=True)
-    moviesByCountry.reset_index(inplace=True)
+        fig = px.scatter_geo(moviesByCountry, title='Production cinématographique mondiale', locations="Alpha-3 code",
+                             size="Nombre de films", size_max=60, template="plotly_dark", hover_name="pays",
+                             projection="orthographic")
 
-    fig = px.scatter_geo(moviesByCountry, title='Production cinématographique mondiale', locations="Alpha-3 code",
-                         size="Nombre de films", size_max=60, template="plotly_dark", hover_name="pays",
-                         projection="orthographic")
+        fig.update_layout(title={'y': 0.95, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, showlegend=True, width=600,
+                          height=600, font=dict(color='white', size=17))
 
-    fig.update_layout(title={'y': 0.95, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, showlegend=True, width=600,
-                      height=600, font=dict(color='white', size=18))
+        fig.update_geos(showcountries=True, countrycolor="#292929", coastlinecolor="grey")
 
-    fig.update_geos(showcountries=True, countrycolor="#292929", coastlinecolor="grey")
-
-    fig.update_traces(marker=dict(color='red'))
-    st.plotly_chart(fig, use_container_width=True)
+        fig.update_traces(marker=dict(color='red'))
+        st.plotly_chart(fig, use_container_width=True)
 
 if vue == 'Focus sur un film':
     @st.cache
@@ -597,54 +609,54 @@ if vue == 'Focus sur un film':
 
     # Focus sur un film
     title = st.text_input('Rentrez un titre de film', 'Deadpool')
+    top3 = st.sidebar.selectbox("Affichage",("Généralités","Top 3 de la même année", "Top 3 du même genre"))
+    if top3 == "Généralités":
 
-    # Durée du film
-    mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
-    mov_duree = df_movies[df_movies['imdb_title_id'] == mov_imdb]['duration'].values[0]
+        # Durée du film
+        mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
+        mov_duree = df_movies[df_movies['imdb_title_id'] == mov_imdb]['duration'].values[0]
 
-    fig, ax = plt.subplots(figsize=(10,3))
-    x = 0
-    y = 0
-    circle = plt.Circle((x, y), radius=1, facecolor='black', edgecolor=(1, 0, 0), linewidth=3)
-    ax.add_patch(circle)
-    label = ax.annotate(mov_duree, xy=(x, y), fontsize=45, ha="center", va='center', color='white')
-    plt.title('Durée (min)', fontsize=20,
-              fontdict={'verticalalignment': 'baseline', 'horizontalalignment': 'center', 'color': 'black'})
-    ax.set_aspect('equal')
-    ax.autoscale_view()
-    plt.axis('off')
-    st.pyplot(fig)
+        fig, ax = plt.subplots(figsize=(10,3))
+        x = 0
+        y = 0
+        circle = plt.Circle((x, y), radius=1, facecolor='black', edgecolor=(1, 0, 0), linewidth=3)
+        ax.add_patch(circle)
+        label = ax.annotate(mov_duree, xy=(x, y), fontsize=45, ha="center", va='center', color='white')
+        plt.title('Durée (min)', fontsize=20,
+                  fontdict={'verticalalignment': 'baseline', 'horizontalalignment': 'center', 'color': 'black'})
+        ax.set_aspect('equal')
+        ax.autoscale_view()
+        plt.axis('off')
+        st.pyplot(fig)
 
-    # Notes du film sélectionné par sexe et par tranches d'âge
-    st.markdown('### Note moyenne en fonction du genre et de la classe d\'âge')
-    m_18 = df_movies[df_movies['title'] == title]['males_18age_avg_vote'].values[0]
-    m_30 = df_movies[df_movies['title'] == title]['males_30age_avg_vote'].values[0]
-    m_45 = df_movies[df_movies['title'] == title]['males_45age_avg_vote'].values.astype(int)[0]
+        # Notes du film sélectionné par sexe et par tranches d'âge
+        m_18 = df_movies[df_movies['title'] == title]['males_18age_avg_vote'].values[0]
+        m_30 = df_movies[df_movies['title'] == title]['males_30age_avg_vote'].values[0]
+        m_45 = df_movies[df_movies['title'] == title]['males_45age_avg_vote'].values.astype(int)[0]
 
-    f_18 = df_movies[df_movies['title'] == title]['females_18age_avg_vote'].values[0]
-    f_30 = df_movies[df_movies['title'] == title]['females_30age_avg_vote'].values[0]
-    f_45 = df_movies[df_movies['title'] == title]['females_45age_avg_vote'].values[0]
+        f_18 = df_movies[df_movies['title'] == title]['females_18age_avg_vote'].values[0]
+        f_30 = df_movies[df_movies['title'] == title]['females_30age_avg_vote'].values[0]
+        f_45 = df_movies[df_movies['title'] == title]['females_45age_avg_vote'].values[0]
 
-    avg = df_movies[df_movies['title'] == title]['average_votes'].values[0]
+        avg = df_movies[df_movies['title'] == title]['average_votes'].values[0]
 
-    labels = ['18-30', '30-45', '45 +']
-    men_means = [m_18, m_30, m_45]
-    women_means = [f_18, f_30, f_45]
+        labels = ['18-30', '30-45', '45 +']
+        men_means = [m_18, m_30, m_45]
+        women_means = [f_18, f_30, f_45]
 
-    fig = go.Figure(data=[
-        go.Bar(name='Hommes', x=labels, y=men_means, marker_color='white', text=men_means, textposition='outside'),
-        go.Bar(name='Femmes', x=labels, y=women_means, marker_color='red', text=women_means, textposition='outside')
-    ])
+        fig = go.Figure(data=[
+            go.Bar(name='Hommes', x=labels, y=men_means, marker_color='white', text=men_means, textposition='outside'),
+            go.Bar(name='Femmes', x=labels, y=women_means, marker_color='red', text=women_means, textposition='outside')
+        ])
 
-    fig.update_layout(template="plotly_dark", title_text='Note moyennne en fonction du genre et de la classe d\'âge',
-                      title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'})
+        fig.update_layout(template="plotly_dark", title_text='Note moyennne en fonction du genre et de la classe d\'âge',
+                          title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'})
 
-    # Change the bar mode
-    fig.update_layout(barmode='group', width = 500, height = 400)
-    fig.update_yaxes(range=[0, 10])
-    st.plotly_chart(fig, use_container_width=True)
+        # Change the bar mode
+        fig.update_layout(barmode='group', width = 500, height = 400)
+        fig.update_yaxes(range=[0, 10])
+        st.plotly_chart(fig, use_container_width=True)
 
-    top3 = st.sidebar.selectbox("Affichage",("Top 3 de la même année", "Top 3 du même genre"))
     if top3 == "Top 3 du même genre":
         # TOP 3 des films du même genre
 
@@ -658,7 +670,6 @@ if vue == 'Focus sur un film':
         Top_genre.rename(columns={'title': 'Titre', 'director': 'Réalisateur', 'year': 'Année', 'average_votes': 'Note'},
                          inplace=True)
         parsed_list, poster1, poster2, poster3 = list_parser(list(Top_genre['imdb_title_id'].unique()))
-        st.markdown(" ------------------------------------------------------")
         st.markdown('## Top 3 des films du même genre : ' + str(mov_genre1))
         fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4, 5],
                                        columnwidth=[8, 50, 50, 20, 10],
@@ -696,7 +707,7 @@ if vue == 'Focus sur un film':
 
     else:
         # TOP 3 des films de la même année que le film sélectionné
-
+        mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
         mov_year = df_movies[df_movies['imdb_title_id'] == mov_imdb]['year'].values[0]
         Top_year = df_movies[df_movies['year'] == mov_year][
             ['imdb_title_id', 'title', 'director', 'average_votes', 'genre 1', 'actor_1', 'actor_2', 'description']].sort_values(by='average_votes',
@@ -706,7 +717,6 @@ if vue == 'Focus sur un film':
         Top_year.rename(columns={'title': 'Titre', 'director': 'Réalisateur', 'average_votes': 'Note', 'genre 1': 'Genre'},
                         inplace=True)
         parsed_list, poster1, poster2, poster3 = list_parser(list(Top_year['imdb_title_id'].unique()))
-        st.markdown(" ------------------------------------------------------")
         st.markdown('## Top 3 des films de la même année : ' + str(mov_year))
         fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4],
                                        columnwidth=[8, 50, 50, 10],
