@@ -20,8 +20,11 @@ vue = st.sidebar.radio(
     ('Accueil', 'Recommandations', 'Statistiques Générales', 'Focus sur un film'), 0)
 
 if vue == 'Accueil':
+    st.markdown(
+        "<h3 style='text-align: center; color: black; size = 0'>Tu es à court d\'idée ? Tu ne sais plus quoi regarder ? Alors passe à la partie Recommandations, nous allons t\'aider !</h3>",
+        unsafe_allow_html=True)
     st.image('https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/accueil_2.jpeg?raw=true', width=650)
-    st.markdown('Toi aussi tu es à court d\'idée ? Tu ne sais plus quoi regarder ? Alors passe à la partie __Recommandations__, nous allons t\'aider !')
+
 
 if vue == 'Recommandations':
     st.markdown("<h3 style='text-align: center; color: grey; size = 0'>Maintenant que vous êtes bien installés, il n'y a plus qu'à rentrer \
@@ -380,13 +383,14 @@ if vue == 'Recommandations':
     st.plotly_chart(fig, use_container_width=True)
 
 # CI film n°1
+    st.markdown("----------------------------------------------------------")
     st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(reco.iloc[display_min + 0, 0]) + " (" + \
                 str(reco.iloc[display_min + 0, 1]) + ")" "</h2>", unsafe_allow_html=True)
     st.markdown('<p align="center"><img width="150" height="220" src=' + poster1 +"</p>", unsafe_allow_html=True)
     st.write('Réalisateur : ' + str(reco.iloc[display_min + 0, 8]))
     st.write('Acteurs principaux : ' + str(reco.iloc[display_min + 0, 9]) + ', ' + str(reco.iloc[display_min + 0, 10]))
     st.write('Synopsis : ' + str(reco.iloc[display_min + 0, 11]))
-
+    st.markdown("----------------------------------------------------------")
 # CI film n°2
     st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(reco.iloc[display_min + 1, 0]) + " (" + \
                 str(reco.iloc[display_min + 1, 1]) + ")" "</h2>", unsafe_allow_html=True)
@@ -394,7 +398,7 @@ if vue == 'Recommandations':
     st.write('Réalisateur : ' + str(reco.iloc[display_min + 1, 8]))
     st.write('Acteurs principaux : ' + str(reco.iloc[display_min + 1, 9]) + ', ' + str(reco.iloc[display_min + 1, 10]))
     st.write('Synopsis : ' + str(reco.iloc[display_min + 1, 11]))
-
+    st.markdown("----------------------------------------------------------")
 # CI film n°3
     st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(reco.iloc[display_min + 2, 0]) + " (" + \
                 str(reco.iloc[display_min + 2, 1]) + ")" "</h2>", unsafe_allow_html=True)
@@ -402,7 +406,7 @@ if vue == 'Recommandations':
     st.write('Réalisateur : ' + str(reco.iloc[display_min + 2, 8]))
     st.write('Acteurs principaux : ' + str(reco.iloc[display_min + 2, 9]) + ', ' + str(reco.iloc[display_min + 2, 10]))
     st.write('Synopsis : ' + str(reco.iloc[display_min + 2, 11]))
-
+    st.markdown("----------------------------------------------------------")
 # CI film n°4
     st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(reco.iloc[display_min + 3, 0]) + " (" + \
                 str(reco.iloc[display_min + 3, 1]) + ")" "</h2>", unsafe_allow_html=True)
@@ -410,7 +414,7 @@ if vue == 'Recommandations':
     st.write('Réalisateur : ' + str(reco.iloc[display_min + 3, 8]))
     st.write('Acteurs principaux : ' + str(reco.iloc[display_min + 3, 9]) + ', ' + str(reco.iloc[display_min + 3, 10]))
     st.write('Synopsis : ' + str(reco.iloc[display_min + 3, 11]))
-
+    st.markdown("----------------------------------------------------------")
 # CI film n°5
     st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(reco.iloc[display_min + 4, 0]) + " (" + \
                 str(reco.iloc[display_min + 4, 1]) + ")" "</h2>", unsafe_allow_html=True)
@@ -418,7 +422,7 @@ if vue == 'Recommandations':
     st.write('Réalisateur : ' + str(reco.iloc[display_min + 4, 8]))
     st.write('Acteurs principaux : ' + str(reco.iloc[display_min + 4, 9]) + ', ' + str(reco.iloc[display_min + 4, 10]))
     st.write('Synopsis : ' + str(reco.iloc[display_min + 4, 11]))
-
+    st.markdown("----------------------------------------------------------")
 if vue == 'Statistiques Générales':
     @st.cache
     def csv(path):
@@ -657,7 +661,7 @@ if vue == 'Focus sur un film':
         fig.update_yaxes(range=[0, 10])
         st.plotly_chart(fig, use_container_width=True)
 
-    if top3 == "Top 3 du même genre":
+    elif top3 == "Top 3 du même genre":
         # TOP 3 des films du même genre
 
         mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
@@ -683,21 +687,21 @@ if vue == 'Focus sur un film':
 
         fig.update_layout(width=1200, height=400)
         st.plotly_chart(fig, use_container_width=True)
-
+        st.markdown("----------------------------------------------------------")
         st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[0, 1]) + " (" + \
                     str(Top_genre.iloc[0, 3]) + ")" "</h2>", unsafe_allow_html=True)
         st.markdown('<p align="center"><img width="150" height="220" src=' + poster1 + "</p>", unsafe_allow_html=True)
         st.write('Réalisateur : ' + str(Top_genre.iloc[0, 2]))
         st.write('Acteurs principaux : ' + str(Top_genre.iloc[0, 5]) + ', ' + str(Top_genre.iloc[0, 6]))
         st.write('Synopsis : ' + str(Top_genre.iloc[0, 7]))
-
+        st.markdown("----------------------------------------------------------")
         st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[1, 1]) + " (" + \
                     str(Top_genre.iloc[1, 3]) + ")" "</h2>", unsafe_allow_html=True)
         st.markdown('<p align="center"><img width="150" height="220" src=' + poster2 + "</p>", unsafe_allow_html=True)
         st.write('Réalisateur : ' + str(Top_genre.iloc[1, 2]))
         st.write('Acteurs principaux : ' + str(Top_genre.iloc[1, 5]) + ', ' + str(Top_genre.iloc[1, 6]))
         st.write('Synopsis : ' + str(Top_genre.iloc[1, 7]))
-
+        st.markdown("----------------------------------------------------------")
         st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[2, 1]) + " (" + \
                     str(Top_genre.iloc[2, 3]) + ")" "</h2>", unsafe_allow_html=True)
         st.markdown('<p align="center"><img width="150" height="220" src=' + poster3 + "</p>", unsafe_allow_html=True)
@@ -728,6 +732,7 @@ if vue == 'Focus sur un film':
 
         fig.update_layout(width=1200, height=400)
         st.plotly_chart(fig, use_container_width=True)
+        st.markdown("----------------------------------------------------------")
         st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[0, 1]) + " (" + \
                     str(Top_year.iloc[0, 3]) + ")" "</h2>", unsafe_allow_html=True)
         st.markdown('<p align="center"><img width="150" height="220" src=' + poster1 + "</p>", unsafe_allow_html=True)
@@ -735,7 +740,7 @@ if vue == 'Focus sur un film':
         st.write('Genre : ' + str(Top_year.iloc[0,4]))
         st.write('Acteurs principaux : ' + str(Top_year.iloc[0, 5]) + ', ' + str(Top_year.iloc[0, 6]))
         st.write('Synopsis : ' + str(Top_year.iloc[0, 7]))
-
+        st.markdown("----------------------------------------------------------")
         st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[1, 1]) + " (" + \
                     str(Top_year.iloc[1, 3]) + ")" "</h2>", unsafe_allow_html=True)
         st.markdown('<p align="center"><img width="150" height="220" src=' + poster2 + "</p>", unsafe_allow_html=True)
@@ -743,7 +748,7 @@ if vue == 'Focus sur un film':
         st.write('Genre : ' + str(Top_year.iloc[0,4]))
         st.write('Acteurs principaux : ' + str(Top_year.iloc[1, 5]) + ', ' + str(Top_year.iloc[1, 6]))
         st.write('Synopsis : ' + str(Top_year.iloc[1, 7]))
-
+        st.markdown("----------------------------------------------------------")
         st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[2, 1]) + " (" + \
                     str(Top_year.iloc[2, 3]) + ")" "</h2>", unsafe_allow_html=True)
         st.markdown('<p align="center"><img width="150" height="220" src=' + poster3 + "</p>", unsafe_allow_html=True)
