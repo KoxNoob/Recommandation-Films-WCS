@@ -13,7 +13,7 @@ import plotly.graph_objects as go
 read_and_cache_csv = st.cache(pd.read_csv)
 sns.set()
 st.sidebar.image(
-    'https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/Screenshot%20from%202020-05-13%2014-30-59.png?raw=true',
+    'https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/wildataflix.png?raw=true',
     width=300)
 vue = st.sidebar.radio(
     "Menu",
@@ -27,7 +27,7 @@ if vue == 'Accueil':
     st.markdown('</body>', unsafe_allow_html=True)
 if vue == 'Recommandations':
     st.markdown("<h3 style='text-align: center; color: grey; size = 0'>Maintenant que vous êtes bien installés, il n'y a plus qu'à rentrer \
-             vos préférences dans la barre de naviguation à gauche, et laisser nous faire !</h3>",
+             vos préférences dans la barre de naviguation à gauche, et laissez nous faire !</h3>",
                 unsafe_allow_html=True)
 
     attente = np.random.choice([
@@ -344,7 +344,7 @@ if vue == 'Recommandations':
                 globals()['poster%s' % x] = url_list[x - 1]
             else:
                 globals()[
-                    'poster%s' % x] = "https://raw.githubusercontent.com/KoxNoob/Recommandation-Films-WCS/master/papiers-peints-vecteur-message-de-pixel-game-over.jpg.jpg"
+                    'poster%s' % x] = "https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/image.png?raw=true"
         return url_list, poster1, poster2, poster3, poster4, poster5
 
 
@@ -591,7 +591,7 @@ if vue == 'Focus sur un film':
                 globals()['poster%s' % x] = url_list[x - 1]
             else:
                 globals()[
-                    'poster%s' % x] = "https://raw.githubusercontent.com/KoxNoob/Recommandation-Films-WCS/master/papiers-peints-vecteur-message-de-pixel-game-over.jpg.jpg"
+                    'poster%s' % x] = "https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/image.png?raw=true"
         return url_list, poster1, poster2, poster3
 
 
@@ -602,65 +602,18 @@ if vue == 'Focus sur un film':
     mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
     mov_duree = df_movies[df_movies['imdb_title_id'] == mov_imdb]['duration'].values[0]
 
-    fig = go.Figure()
-
-    # Set axes properties
-    fig.update_xaxes(range=[0, 1], zeroline=False)
-    fig.update_yaxes(range=[0, 1])
-
-    fig.update_layout(
-        shapes=[
-            # filled circle
-            dict(
-                type="circle",
-                xref="x",
-                yref="y",
-                fillcolor="black",
-                x0=0.1,
-                y0=0.1,
-                x1=0.99,
-                y1=0.99,
-                line=dict(
-                    color="red",
-                    width=3
-                )
-            )
-        ]
-    )
-    fig.update_xaxes(
-        showticklabels=False,
-        showgrid=False,
-        zeroline=False,
-    )
-    fig.update_yaxes(
-        showticklabels=False,
-        showgrid=False,
-        zeroline=False,
-    )
-
-    # Set figure size
-    fig.update_layout(width=600, height=600, plot_bgcolor="white")
-
-    fig.update_layout(
-        showlegend=False,
-        annotations=[
-            dict(
-                x=0.54,
-                y=0.54,
-                xref="x",
-                yref="y",
-                text=str(mov_duree),
-                showarrow=False, font_size=130, font_color='white'
-            )
-        ]
-    )
-
-    fig.update_layout(title_text='Durée (min)', title={'y': 0.92, 'x': 0.54, 'xanchor': 'center', 'yanchor': 'top'},
-                      font=dict(
-                          size=24,
-                          color="black"))
-
-    st.plotly_chart(fig, use_container_width=True)
+    fig, ax = plt.subplots(figsize=(10,3))
+    x = 0
+    y = 0
+    circle = plt.Circle((x, y), radius=1, facecolor='black', edgecolor=(1, 0, 0), linewidth=3)
+    ax.add_patch(circle)
+    label = ax.annotate(mov_duree, xy=(x, y), fontsize=45, ha="center", va='center', color='white')
+    plt.title('Durée (min)', fontsize=20,
+              fontdict={'verticalalignment': 'baseline', 'horizontalalignment': 'center', 'color': 'black'})
+    ax.set_aspect('equal')
+    ax.autoscale_view()
+    plt.axis('off')
+    st.pyplot(fig)
 
     # Notes du film sélectionné par sexe et par tranches d'âge
     st.markdown('### Note moyenne en fonction du genre et de la classe d\'âge')
@@ -687,100 +640,104 @@ if vue == 'Focus sur un film':
                       title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'})
 
     # Change the bar mode
-    fig.update_layout(barmode='group')
+    fig.update_layout(barmode='group', width = 500, height = 400)
     fig.update_yaxes(range=[0, 10])
     st.plotly_chart(fig, use_container_width=True)
 
-    # TOP 3 des films du même genre
+    top3 = st.sidebar.selectbox("Affichage",("Top 3 de la même année", "Top 3 du même genre"))
+    if top3 == "Top 3 du même genre":
+        # TOP 3 des films du même genre
 
-    mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
-    mov_id = df_movies[df_movies['title'] == title].index.values.astype(int)[0]
-    mov_genre1 = df_movies[df_movies.index == mov_id]['genre 1'].values[0]
-    Top_genre = df_movies[df_movies['genre 1'] == mov_genre1][
-        ['imdb_title_id', 'title', 'director', 'year', 'average_votes', 'actor_1', 'actor_2', 'description']].sort_values(by='average_votes',
-         ascending=False).head(3).reset_index(drop=True)
-    Top_genre.index = Top_genre.index + 1
-    Top_genre.rename(columns={'title': 'Titre', 'director': 'Réalisateur', 'year': 'Année', 'average_votes': 'Note'},
-                     inplace=True)
-    parsed_list, poster1, poster2, poster3 = list_parser(list(Top_genre['imdb_title_id'].unique()))
-    st.markdown('# Top 3 des films du même genre : ' + str(mov_genre1))
-    fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4, 5],
-                                   columnwidth=[8, 50, 50, 20, 10],
-                                   header=dict(values=['', 'Titre', 'Réalisateur', 'Année', 'Note'], fill_color='red',
-                                               line=dict(width=2), font=dict(color='white', size=14)),
-                                   cells=dict(
-                                       values=[[1, 2, 3], Top_genre.Titre, Top_genre.Réalisateur, Top_genre.Année,
-                                               Top_genre.Note],
-                                       fill_color=['red', 'black'], line=dict(width=2), font=dict(color='white'),
-                                       height=30))])
+        mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
+        mov_id = df_movies[df_movies['title'] == title].index.values.astype(int)[0]
+        mov_genre1 = df_movies[df_movies.index == mov_id]['genre 1'].values[0]
+        Top_genre = df_movies[df_movies['genre 1'] == mov_genre1][
+            ['imdb_title_id', 'title', 'director', 'year', 'average_votes', 'actor_1', 'actor_2', 'description']].sort_values(by='average_votes',
+             ascending=False).head(3).reset_index(drop=True)
+        Top_genre.index = Top_genre.index + 1
+        Top_genre.rename(columns={'title': 'Titre', 'director': 'Réalisateur', 'year': 'Année', 'average_votes': 'Note'},
+                         inplace=True)
+        parsed_list, poster1, poster2, poster3 = list_parser(list(Top_genre['imdb_title_id'].unique()))
+        st.markdown(" ------------------------------------------------------")
+        st.markdown('## Top 3 des films du même genre : ' + str(mov_genre1))
+        fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4, 5],
+                                       columnwidth=[8, 50, 50, 20, 10],
+                                       header=dict(values=['', 'Titre', 'Réalisateur', 'Année', 'Note'], fill_color='red',
+                                                   line=dict(width=2), font=dict(color='white', size=14)),
+                                       cells=dict(
+                                           values=[[1, 2, 3], Top_genre.Titre, Top_genre.Réalisateur, Top_genre.Année,
+                                                   Top_genre.Note],
+                                           fill_color=['red', 'black'], line=dict(width=2), font=dict(color='white'),
+                                           height=30))])
 
-    fig.update_layout(width=1200, height=300)
-    st.plotly_chart(fig, use_container_width=True)
+        fig.update_layout(width=1200, height=400)
+        st.plotly_chart(fig, use_container_width=True)
 
-    st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[0, 1]) + " (" + \
-                str(Top_genre.iloc[0, 3]) + ")" "</h2>", unsafe_allow_html=True)
-    st.markdown('<p align="center"><img width="150" height="220" src=' + poster1 + "</p>", unsafe_allow_html=True)
-    st.write('Réalisateur : ' + str(Top_genre.iloc[0, 2]))
-    st.write('Acteurs principaux : ' + str(Top_genre.iloc[0, 5]) + ', ' + str(Top_genre.iloc[0, 6]))
-    st.write('Synopsis : ' + str(Top_genre.iloc[0, 7]))
+        st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[0, 1]) + " (" + \
+                    str(Top_genre.iloc[0, 3]) + ")" "</h2>", unsafe_allow_html=True)
+        st.markdown('<p align="center"><img width="150" height="220" src=' + poster1 + "</p>", unsafe_allow_html=True)
+        st.write('Réalisateur : ' + str(Top_genre.iloc[0, 2]))
+        st.write('Acteurs principaux : ' + str(Top_genre.iloc[0, 5]) + ', ' + str(Top_genre.iloc[0, 6]))
+        st.write('Synopsis : ' + str(Top_genre.iloc[0, 7]))
 
-    st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[1, 1]) + " (" + \
-                str(Top_genre.iloc[1, 3]) + ")" "</h2>", unsafe_allow_html=True)
-    st.markdown('<p align="center"><img width="150" height="220" src=' + poster2 + "</p>", unsafe_allow_html=True)
-    st.write('Réalisateur : ' + str(Top_genre.iloc[1, 2]))
-    st.write('Acteurs principaux : ' + str(Top_genre.iloc[1, 5]) + ', ' + str(Top_genre.iloc[1, 6]))
-    st.write('Synopsis : ' + str(Top_genre.iloc[1, 7]))
+        st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[1, 1]) + " (" + \
+                    str(Top_genre.iloc[1, 3]) + ")" "</h2>", unsafe_allow_html=True)
+        st.markdown('<p align="center"><img width="150" height="220" src=' + poster2 + "</p>", unsafe_allow_html=True)
+        st.write('Réalisateur : ' + str(Top_genre.iloc[1, 2]))
+        st.write('Acteurs principaux : ' + str(Top_genre.iloc[1, 5]) + ', ' + str(Top_genre.iloc[1, 6]))
+        st.write('Synopsis : ' + str(Top_genre.iloc[1, 7]))
 
-    st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[2, 1]) + " (" + \
-                str(Top_genre.iloc[2, 3]) + ")" "</h2>", unsafe_allow_html=True)
-    st.markdown('<p align="center"><img width="150" height="220" src=' + poster3 + "</p>", unsafe_allow_html=True)
-    st.write('Réalisateur : ' + str(Top_genre.iloc[2, 2]))
-    st.write('Acteurs principaux : ' + str(Top_genre.iloc[2, 5]) + ', ' + str(Top_genre.iloc[2, 6]))
-    st.write('Synopsis : ' + str(Top_genre.iloc[2, 7]))
+        st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[2, 1]) + " (" + \
+                    str(Top_genre.iloc[2, 3]) + ")" "</h2>", unsafe_allow_html=True)
+        st.markdown('<p align="center"><img width="150" height="220" src=' + poster3 + "</p>", unsafe_allow_html=True)
+        st.write('Réalisateur : ' + str(Top_genre.iloc[2, 2]))
+        st.write('Acteurs principaux : ' + str(Top_genre.iloc[2, 5]) + ', ' + str(Top_genre.iloc[2, 6]))
+        st.write('Synopsis : ' + str(Top_genre.iloc[2, 7]))
 
-    # TOP 3 des films de la même année que le film sélectionné
+    else:
+        # TOP 3 des films de la même année que le film sélectionné
 
-    mov_year = df_movies[df_movies['imdb_title_id'] == mov_imdb]['year'].values[0]
-    Top_year = df_movies[df_movies['year'] == mov_year][
-        ['imdb_title_id', 'title', 'director', 'average_votes', 'genre 1', 'actor_1', 'actor_2', 'description']].sort_values(by='average_votes',
-                                                                                        ascending=False).head(
-        3).reset_index(drop=True)
-    Top_year.index = Top_year.index + 1
-    Top_year.rename(columns={'title': 'Titre', 'director': 'Réalisateur', 'average_votes': 'Note', 'genre 1': 'Genre'},
-                    inplace=True)
-    parsed_list, poster1, poster2, poster3 = list_parser(list(Top_year['imdb_title_id'].unique()))
+        mov_year = df_movies[df_movies['imdb_title_id'] == mov_imdb]['year'].values[0]
+        Top_year = df_movies[df_movies['year'] == mov_year][
+            ['imdb_title_id', 'title', 'director', 'average_votes', 'genre 1', 'actor_1', 'actor_2', 'description']].sort_values(by='average_votes',
+                                                                                            ascending=False).head(
+            3).reset_index(drop=True)
+        Top_year.index = Top_year.index + 1
+        Top_year.rename(columns={'title': 'Titre', 'director': 'Réalisateur', 'average_votes': 'Note', 'genre 1': 'Genre'},
+                        inplace=True)
+        parsed_list, poster1, poster2, poster3 = list_parser(list(Top_year['imdb_title_id'].unique()))
+        st.markdown(" ------------------------------------------------------")
+        st.markdown('## Top 3 des films de la même année : ' + str(mov_year))
+        fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4],
+                                       columnwidth=[8, 50, 50, 10],
+                                       header=dict(values=['', 'Titre', 'Réalisateur', 'Note'], fill_color='red',
+                                                   line=dict(width=2), font=dict(color='white', size=14)),
+                                       cells=dict(values=[[1, 2, 3], Top_year.Titre, Top_year.Réalisateur, Top_year.Note],
+                                                  fill_color=['red', 'black'], font=dict(color='white', size=[14, 12]),
+                                                  line=dict(width=2), height=30))])
 
-    st.markdown('# Top 3 des films de la même année : ' + str(mov_year))
-    fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4],
-                                   columnwidth=[8, 50, 50, 10],
-                                   header=dict(values=['', 'Titre', 'Réalisateur', 'Note'], fill_color='red',
-                                               line=dict(width=2), font=dict(color='white', size=14)),
-                                   cells=dict(values=[[1, 2, 3], Top_year.Titre, Top_year.Réalisateur, Top_year.Note],
-                                              fill_color=['red', 'black'], font=dict(color='white', size=[14, 12]),
-                                              line=dict(width=2), height=30))])
+        fig.update_layout(width=1200, height=400)
+        st.plotly_chart(fig, use_container_width=True)
+        st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[0, 1]) + " (" + \
+                    str(Top_year.iloc[0, 3]) + ")" "</h2>", unsafe_allow_html=True)
+        st.markdown('<p align="center"><img width="150" height="220" src=' + poster1 + "</p>", unsafe_allow_html=True)
+        st.write('Réalisateur : ' + str(Top_year.iloc[0, 2]))
+        st.write('Genre : ' + str(Top_year.iloc[0,4]))
+        st.write('Acteurs principaux : ' + str(Top_year.iloc[0, 5]) + ', ' + str(Top_year.iloc[0, 6]))
+        st.write('Synopsis : ' + str(Top_year.iloc[0, 7]))
 
-    fig.update_layout(width=1200, height=300)
-    st.plotly_chart(fig, use_container_width=True)
-    st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[0, 1]) + " (" + \
-                str(Top_year.iloc[0, 3]) + ")" "</h2>", unsafe_allow_html=True)
-    st.markdown('<p align="center"><img width="150" height="220" src=' + poster1 + "</p>", unsafe_allow_html=True)
-    st.write('Réalisateur : ' + str(Top_year.iloc[0, 2]))
-    st.write('Genre : ' + str(Top_year.iloc[0,4]))
-    st.write('Acteurs principaux : ' + str(Top_year.iloc[0, 5]) + ', ' + str(Top_year.iloc[0, 6]))
-    st.write('Synopsis : ' + str(Top_year.iloc[0, 7]))
+        st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[1, 1]) + " (" + \
+                    str(Top_year.iloc[1, 3]) + ")" "</h2>", unsafe_allow_html=True)
+        st.markdown('<p align="center"><img width="150" height="220" src=' + poster2 + "</p>", unsafe_allow_html=True)
+        st.write('Réalisateur : ' + str(Top_year.iloc[1, 2]))
+        st.write('Genre : ' + str(Top_year.iloc[0,4]))
+        st.write('Acteurs principaux : ' + str(Top_year.iloc[1, 5]) + ', ' + str(Top_year.iloc[1, 6]))
+        st.write('Synopsis : ' + str(Top_year.iloc[1, 7]))
 
-    st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[1, 1]) + " (" + \
-                str(Top_year.iloc[1, 3]) + ")" "</h2>", unsafe_allow_html=True)
-    st.markdown('<p align="center"><img width="150" height="220" src=' + poster2 + "</p>", unsafe_allow_html=True)
-    st.write('Réalisateur : ' + str(Top_year.iloc[1, 2]))
-    st.write('Genre : ' + str(Top_year.iloc[0,4]))
-    st.write('Acteurs principaux : ' + str(Top_year.iloc[1, 5]) + ', ' + str(Top_year.iloc[1, 6]))
-    st.write('Synopsis : ' + str(Top_year.iloc[1, 7]))
-
-    st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[2, 1]) + " (" + \
-                str(Top_year.iloc[2, 3]) + ")" "</h2>", unsafe_allow_html=True)
-    st.markdown('<p align="center"><img width="150" height="220" src=' + poster3 + "</p>", unsafe_allow_html=True)
-    st.write('Réalisateur : ' + str(Top_year.iloc[2, 2]))
-    st.write('Genre : ' + str(Top_year.iloc[0,4]))
-    st.write('Acteurs principaux : ' + str(Top_year.iloc[2, 5]) + ', ' + str(Top_year.iloc[2, 6]))
-    st.write('Synopsis : ' + str(Top_year.iloc[2, 7]))
+        st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[2, 1]) + " (" + \
+                    str(Top_year.iloc[2, 3]) + ")" "</h2>", unsafe_allow_html=True)
+        st.markdown('<p align="center"><img width="150" height="220" src=' + poster3 + "</p>", unsafe_allow_html=True)
+        st.write('Réalisateur : ' + str(Top_year.iloc[2, 2]))
+        st.write('Genre : ' + str(Top_year.iloc[0,4]))
+        st.write('Acteurs principaux : ' + str(Top_year.iloc[2, 5]) + ', ' + str(Top_year.iloc[2, 6]))
+        st.write('Synopsis : ' + str(Top_year.iloc[2, 7]))
