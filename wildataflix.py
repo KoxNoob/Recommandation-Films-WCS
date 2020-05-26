@@ -31,7 +31,7 @@ if vue == 'Accueil':
 
 
 if vue == 'Recommandations':
-    st.markdown("<h3 style='text-align: center; color: grey; size = 0'>Maintenant que tu es bien installé, il n'y a plus qu'à rentrer tes préférences dans la barre de navigation à gauche, et laisses nous faire !</h3>",
+    st.markdown("<h3 style='text-align: center; color: grey; size = 0'>Maintenant que tu es bien installé, il n'y a plus qu'à entrer tes préférences dans la barre de navigation à gauche, et laisse nous faire !</h3>",
                 unsafe_allow_html=True)
     attente = np.random.choice([
                                    'Tiens, et si tu allais te chercher une bière ? Ou du popcorn ? Non ? Tu as raison, tout est prêt, voici notre sélection ! ', \
