@@ -49,7 +49,8 @@ if vue == 'Recommandations':
                                  t'es tendue Natacha !", "Merci la gueuse. Tu es un laideron mais tu es bien bonne.", "J'aime me beurrer \
                                 la biscotte"])
 
-
+    with st.spinner(attente):
+        time.sleep(5)
 
     @st.cache(persist=True)
     def csv(path):
@@ -372,8 +373,7 @@ if vue == 'Recommandations':
     else :
         lenght = False
 
-    with st.spinner(attente):
-        time.sleep(5)
+
     if lenght:
 
         st.success('Tadam !')
