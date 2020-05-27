@@ -33,21 +33,23 @@ if vue == 'Recommandations':
         unsafe_allow_html=True)
     attente = np.random.choice(['Tiens, et si tu allais te chercher une bière ? Ou du popcorn ? Non ? Tu as raison, \
                                 tout est prêt, voici notre sélection ! ', \
-                                'Il va falloir choisir Néo. La pilule bleue, ou la pilule rouge ?', 'Il s\'appelle Juste le Blanc. Son prénom c\'est \
-                                Juste, et son nom c\'est le Blanc.',
-                                'Que la force de la recommandation soit avec toi !', 'Non pas toi Obélix, tu \
-                                es tombé dedans quand tu étais petit !', "Vers l'infini et au-delà", "La vie c’est \
-                                comme une boîte de chocolats, on ne sait jamais sur quoi on va tomber.", \
-                                "Partout où il y a grandeur, grandeur du souverain ou du pouvoir et même de la \
-                                pensée et des passions, l'erreur elle aussi est grande.", "Monde de merde",
-                                "Tu bluffes Martoni", "Tu vois, le monde se divise en deux catégories: ceux qui ont \
-                                un pistolet chargé et ceux qui creusent. Toi tu creuses", "Écoute Bernard… J’crois que toi \
+                                'Il va falloir choisir Néo. La pilule bleue, ou la pilule rouge ? (Matrix)', 'Il s\' \
+                                appelle Juste le Blanc. Son prénom c\'est Juste, et son nom c\'est le Blanc. (Le Dîner \
+                                de cons', 'Que la force soit avec toi ! (Star Wars)', 'Non pas toi Obélix, tu \
+                                es tombé dedans quand tu étais petit ! (Astérix et Obélix)', "Vers l'infini et au-delà \
+                                (Toy Story)", "La vie c’est comme une boîte de chocolats, on ne sait jamais sur quoi \
+                                on va tomber. (Forrest Gump)", "Partout où il y a grandeur, grandeur du souverain ou du pouvoir et même de la \
+                                pensée et des passions, l'erreur elle aussi est grande. (Ben Hur)", "Monde de merde. \
+                                (La Classe Américaine)", "Tu bluffes Martoni. (La Cité de la Peur)", "Tu vois, \
+                                le monde se divise en deux catégories: ceux qui ont un pistolet chargé et ceux qui \
+                                creusent. Toi tu creuses. (Le bon, la brute et le truand)", "Écoute Bernard… J’crois que toi \
                                 et moi, on a un peu le même problème ; c’est qu’on peut pas vraiment tout miser sur notre \
                                 physique, surtout toi. Alors si je peux me permettre de te donner un conseil, c’est oublie qu’t’as \
-                                aucune chance, vas-y, fonce ! On sait jamais, sur un malentendu ça peut marcher…" ,\
-                                "Ou tu sors ou j'te sors mais faudra prendre une décision","Si je te dis que t'es tendue, c'est que \
-                                 t'es tendue Natacha !", "Merci la gueuse. Tu es un laideron mais tu es bien bonne.", "J'aime me beurrer \
-                                la biscotte"])
+                                aucune chance, vas-y, fonce ! On sait jamais, sur un malentendu ça peut marcher… \
+                                (Les Bronzés font du ski)", "Ou tu sors ou j'te sors mais faudra prendre une décision\
+                                (Dikkenek)","Si je te dis que t'es tendue, c'est que t'es tendue Natacha ! (Dikkenek)",
+                                "Merci la gueuse. Tu es un laideron mais tu es bien bonne.(Les visiteurs)", "J'aime \
+                                 me beurrer la biscotte. (OSS 117)"])
 
     with st.spinner(attente):
         time.sleep(5)
@@ -309,7 +311,7 @@ if vue == 'Recommandations':
         return Top5
 
 
-    @st.cache(persist=True)
+    @st.cache(suppress_st_warning=True)
     def api_request(snip):
         url = "https://imdb-internet-movie-database-unofficial.p.rapidapi.com/film/" + snip
         headers = {
