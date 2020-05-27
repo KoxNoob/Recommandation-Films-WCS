@@ -31,7 +31,7 @@ if vue == 'Accueil':
 
 
 if vue == 'Recommandations':
-    st.markdown("<h3 style='text-align: center; color: grey; size = 0'>Maintenant que tu es bien installé, il n'y a plus qu'à entrer tes préférences dans la barre de navigation à gauche, et laisse nous faire !</h3>",
+    st.markdown("<h3 style='text-align: center; color: grey; size = 0'>Maintenant que tu es bien installé, il n'y a plus qu'à entrer tes préférences dans la barre de navigation à gauche, on s'occupe du reste !</h3>",
                 unsafe_allow_html=True)
     attente = np.random.choice([
                                    'Tiens, et si tu allais te chercher une bière ? Ou du popcorn ? Non ? Tu as raison, tout est prêt, voici notre sélection ! ', \
@@ -43,7 +43,7 @@ if vue == 'Recommandations':
         time.sleep(8)
     st.success('Tadam !')
 
-    @st.cache
+    @st.cache(persist = True)
     def csv(path):
         df_movies = pd.read_csv(path)
         df_movies.drop(['Unnamed: 0'], axis=1, inplace=True)
@@ -54,22 +54,22 @@ if vue == 'Recommandations':
 
     ###### Définition des fonctions ######
 
-    sex = st.sidebar.selectbox('Votre sexe ?',
+    sex = st.sidebar.selectbox('Ton sexe ?',
                                ('Femme', 'Homme', 'Peu importe'),2)
 
-    age = st.sidebar.selectbox('Dans quelle tranche d\'âge êtes vous ?',
+    age = st.sidebar.selectbox('Dans quelle tranche d\'âge tu te situes ?',
                                ('18-29 ans', '30-44 ans', '+ de 45 ans'),2)
 
-    genre = st.sidebar.selectbox('Quel genre de films aimez-vous ?',
+    genre = st.sidebar.selectbox('Quel genre de films aimes-tu ?',
                                  ('Biography', 'Drama', 'Adventure', 'History', 'Crime', 'Western', 'Fantasy', 'Comedy',
                                   'Horror', 'Family', 'Action' \
                                       , 'Romance', 'Mystery', 'Animation', 'Sci-Fi', 'Musical', 'Thriller', 'Music',
                                   'Film-Noir', 'War', 'Sport', 'Adult' \
                                       , 'Documentary'),12)
 
-    note = st.sidebar.slider('Vous aimeriez voir les films ayant quelle note de moyenne ?', 0, 10, 7)
+    note = st.sidebar.slider('Quelle est la note moyenne des films que tu aimerais voir ?', 0, 10, 7)
 
-    values = st.sidebar.slider('Sélectionner un intervalle d\'année', 1906, 2019, (1990, 2010))
+    values = st.sidebar.slider('Sélectionne un intervalle d\'années de sortie de films', 1906, 2019, (1990, 2010))
     annee_min = values[0]
     annee_max = values[1]
 
@@ -300,7 +300,7 @@ if vue == 'Recommandations':
         return Top5
 
 
-    @st.cache
+    @st.cache(persist=True)
     def api_request(snip):
         url = "https://imdb-internet-movie-database-unofficial.p.rapidapi.com/film/" + snip
         headers = {
@@ -311,7 +311,7 @@ if vue == 'Recommandations':
         return (response.text)
 
 
-    @st.cache
+    @st.cache(persist=True)
     def token(string):
         start = 0
         i = 0
@@ -325,7 +325,7 @@ if vue == 'Recommandations':
         return token_list[27]
 
 
-    @st.cache
+    @st.cache(persist=True)
     def cleaner(parsed):
         parsed = parsed.replace('poster', '')
         parsed = parsed.replace('"', '')
@@ -335,7 +335,7 @@ if vue == 'Recommandations':
         return parsed
 
 
-    @st.cache
+    @st.cache(persist=True)
     def list_parser(liste):
         url_list = []
         for i in range(len(liste)):
@@ -428,7 +428,7 @@ if vue == 'Administrateur':
     st.sidebar.title("Menu Administrateur")
     admin = st.sidebar.selectbox('', ('Statistiques Générales', 'Focus sur un film'), 0)
     if admin == 'Statistiques Générales':
-        @st.cache
+        @st.cache(persist=True)
         def csv(path):
             df_movies = pd.read_csv(path)
             df_movies.drop(['Unnamed: 0'], axis=1, inplace=True)
@@ -553,7 +553,7 @@ if vue == 'Administrateur':
             st.plotly_chart(fig, use_container_width=True)
 
     if admin == 'Focus sur un film':
-        @st.cache
+        @st.cache(persist=True)
         def csv(path):
             df_movies = pd.read_csv(path)
             df_movies.drop(['Unnamed: 0'], axis=1, inplace=True)
@@ -563,7 +563,7 @@ if vue == 'Administrateur':
         df_movies = csv('https://raw.githubusercontent.com/KoxNoob/Recommandation-Films-WCS/master/df_movies.csv')
 
 
-        @st.cache
+        @st.cache(persist=True)
         def api_request(snip):
             url = "https://imdb-internet-movie-database-unofficial.p.rapidapi.com/film/" + snip
             headers = {
@@ -574,7 +574,7 @@ if vue == 'Administrateur':
             return (response.text)
 
 
-        @st.cache
+        @st.cache(persist=True)
         def token(string):
             start = 0
             i = 0
@@ -588,7 +588,7 @@ if vue == 'Administrateur':
             return token_list[27]
 
 
-        @st.cache
+        @st.cache(persist=True)
         def cleaner(parsed):
             parsed = parsed.replace('poster', '')
             parsed = parsed.replace('"', '')
@@ -598,7 +598,7 @@ if vue == 'Administrateur':
             return parsed
 
 
-        @st.cache
+        @st.cache(persist=True)
         def list_parser(liste):
             url_list = []
             for i in range(len(liste)):
