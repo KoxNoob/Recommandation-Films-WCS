@@ -349,12 +349,17 @@ if vue == 'Recommandations':
     @st.cache(persist=True)
     def list_parser(liste):
         url_list = []
+        longueur = 0
         for i in range(len(liste)):
             raw = api_request(liste[i])
             parsed = token(raw)
             clean_url = cleaner(parsed)
             url_list.append(clean_url)
-        for x in range(1, len(url_list) + 1):
+        if len(url_list) >=10:
+            longueur = 10
+        else:
+            longueur = len(url_list)
+        for x in range(1, longueur + 1):
             if url_list[x - 1] == "":
                 url_list[x - 1] = "https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/image.png?raw=true"
 
