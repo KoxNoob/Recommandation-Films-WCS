@@ -20,6 +20,352 @@ st.sidebar.image('https://github.com/KoxNoob/Recommandation-Films-WCS/blob/maste
 st.sidebar.title("Menu")
 vue = st.sidebar.radio("", ('Accueil', 'Recommandations', 'Administrateur'))
 
+
+@st.cache(persist=True)
+def csv(path):
+    df_movies = pd.read_csv(path)
+    df_movies.drop(['Unnamed: 0'], axis=1, inplace=True)
+    return df_movies
+
+df_movies = csv('https://raw.githubusercontent.com/KoxNoob/Recommandation-Films-WCS/master/df_movies.csv')
+
+
+@st.cache
+# Séparation du df en fonction du sexe
+def df_sexe(sex, df):
+    if sex == 'Femme':
+        df_female = df_movies[['imdb_title_id', 'title', 'year', 'genre 1', 'duration',
+                               'average_votes', 'females_18age_avg_vote',
+                               'females_30age_avg_vote', 'females_45age_avg_vote', 'director',
+                               'actor_1', 'actor_2', 'description', 'g_Action', 'g_Adult',
+                               'g_Adventure', 'g_Animation', 'g_Biography', 'g_Comedy', 'g_Crime',
+                               'g_Documentary', 'g_Drama', 'g_Family', 'g_Fantasy', 'g_Film-Noir',
+                               'g_History', 'g_Horror', 'g_Music', 'g_Musical', 'g_Mystery',
+                               'g_Romance', 'g_Sci-Fi', 'g_Sport', 'g_Thriller', 'g_War', 'g_Western']]
+        return df_female
+    elif sex == 'Homme':
+        df_male = df_movies[['imdb_title_id', 'title', 'year', 'genre 1', 'duration',
+                             'average_votes', 'males_18age_avg_vote',
+                             'males_30age_avg_vote', 'males_45age_avg_vote', 'director',
+                             'actor_1', 'actor_2', 'description', 'g_Action', 'g_Adult',
+                             'g_Adventure', 'g_Animation', 'g_Biography', 'g_Comedy', 'g_Crime',
+                             'g_Documentary', 'g_Drama', 'g_Family', 'g_Fantasy', 'g_Film-Noir',
+                             'g_History', 'g_Horror', 'g_Music', 'g_Musical', 'g_Mystery',
+                             'g_Romance', 'g_Sci-Fi', 'g_Sport', 'g_Thriller', 'g_War', 'g_Western']]
+        return df_male
+    else:
+        df_all = df_movies[['imdb_title_id', 'title', 'year', 'genre 1', 'duration',
+                            'average_votes', 'allgenders_18age_avg_vote',
+                            'allgenders_30age_avg_vote', 'allgenders_45age_avg_vote',
+                            'director', 'actor_1', 'actor_2', 'description', 'g_Action', 'g_Adult',
+                            'g_Adventure', 'g_Animation', 'g_Biography', 'g_Comedy', 'g_Crime',
+                            'g_Documentary', 'g_Drama', 'g_Family', 'g_Fantasy', 'g_Film-Noir',
+                            'g_History', 'g_Horror', 'g_Music', 'g_Musical', 'g_Mystery',
+                            'g_Romance', 'g_Sci-Fi', 'g_Sport', 'g_Thriller', 'g_War', 'g_Western']]
+        return df_all
+
+@st.cache(allow_output_mutation=True)
+def recommandation(sex, age, genre, note):
+    global reco
+    Mask = pd.DataFrame()
+    my_columns = []
+    Top5 = pd.DataFrame()
+    samples = pd.DataFrame()
+    if genre == 'Biography':
+        Mask = pd.DataFrame({'g_Biography': [1]})
+        my_columns = ['imdb_title_id', 'g_Biography']
+
+    if genre == 'Drama':
+        Mask = pd.DataFrame({'g_Drama': [1]})
+        my_columns = ['imdb_title_id', 'g_Drama']
+
+    if genre == 'Adventure':
+        Mask = pd.DataFrame({'g_Adventure': [1]})
+        my_columns = ['imdb_title_id', 'g_Adventure']
+
+    if genre == 'History':
+        Mask = pd.DataFrame({'g_History': [1]})
+        my_columns = ['imdb_title_id', 'g_History']
+
+    if genre == 'Crime':
+        Mask = pd.DataFrame({'g_Crime': [1]})
+        my_columns = ['imdb_title_id', 'g_Crime']
+
+    if genre == 'Western':
+        Mask = pd.DataFrame({'g_Western': [1]})
+        my_columns = ['imdb_title_id', 'g_Western']
+
+    if genre == 'Fantasy':
+        Mask = pd.DataFrame({'g_Fantasy': [1]})
+        my_columns = ['imdb_title_id', 'g_Fantasy']
+
+    if genre == 'Comedy':
+        Mask = pd.DataFrame({'g_Comedy': [1]})
+        my_columns = ['imdb_title_id', 'g_Comedy']
+
+    if genre == 'Horror':
+        Mask = pd.DataFrame({'g_Horror': [1]})
+        my_columns = ['imdb_title_id', 'g_Horror']
+
+    if genre == 'Family':
+        Mask = pd.DataFrame({'g_Family': [1]})
+        my_columns = ['imdb_title_id', 'g_Family']
+
+    if genre == 'Action':
+        Mask = pd.DataFrame({'g_Action': [1]})
+        my_columns = ['imdb_title_id', 'g_Action']
+
+    if genre == 'Romance':
+        Mask = pd.DataFrame({'g_Romance': [1]})
+        my_columns = ['imdb_title_id', 'g_Romance']
+
+    if genre == 'Mystery':
+        Mask = pd.DataFrame({'g_Mystery': [1]})
+        my_columns = ['imdb_title_id', 'g_Mystery']
+
+    if genre == 'Animation':
+        Mask = pd.DataFrame({'g_Animation': [1]})
+        my_columns = ['imdb_title_id', 'g_Animation']
+
+    if genre == 'Sci-Fi':
+        Mask = pd.DataFrame({'g_Sci-Fi': [1]})
+        my_columns = ['imdb_title_id', 'g_Sci-Fi']
+
+    if genre == 'Musical':
+        Mask = pd.DataFrame({'g_Musical': [1]})
+        my_columns = ['imdb_title_id', 'g_Musical']
+
+    if genre == 'Thriller':
+        Mask = pd.DataFrame({'g_Thriller': [1]})
+        my_columns = ['imdb_title_id', 'g_Thriller']
+
+    if genre == 'Music':
+        Mask = pd.DataFrame({'g_Music': [1]})
+        my_columns = ['imdb_title_id', 'g_Music']
+
+    if genre == 'Film-Noir':
+        Mask = pd.DataFrame({'g_Film-Noir': [1]})
+        my_columns = ['imdb_title_id', 'g_Film-Noir']
+
+    if genre == 'War':
+        Mask = pd.DataFrame({'g_War': [1]})
+        my_columns = ['imdb_title_id', 'g_War']
+
+    if genre == 'Sport':
+        Mask = pd.DataFrame({'g_Sport': [1]})
+        my_columns = ['imdb_title_id', 'g_Sport']
+
+    if genre == 'Adult':
+        Mask = pd.DataFrame({'g_Adult': [1]})
+        my_columns = ['imdb_title_id', 'g_Adult']
+
+    if genre == 'Documentary':
+        Mask = pd.DataFrame({'g_Documentary': [1]})
+        my_columns = ['imdb_title_id', 'g_Documentary']
+
+    if sex == 'Femme':
+        if age == '18-29 ans':
+            Mask.insert(1, 'females_18age_avg_vote', note)
+            my_columns.append('females_18age_avg_vote')
+        if age == '30-44 ans':
+            Mask.insert(1, 'females_30age_avg_vote', note)
+            my_columns.append('females_30age_avg_vote')
+        if age == '+ de 45 ans':
+            Mask.insert(1, 'females_45age_avg_vote', note)
+            my_columns.append('females_45age_avg_vote')
+        samples = df_user[my_columns]
+        dataflix = NearestNeighbors(n_neighbors=50)
+        dataflix.fit(samples.iloc[:, 1:])
+        temp = pd.DataFrame()
+        for i in range(50):
+            indice_recommandation = dataflix.kneighbors(Mask)[1][0][i]
+            picsou = samples.iloc[indice_recommandation, :][0]
+            Top5 = pd.concat([temp, df_user[df_user['imdb_title_id'] == picsou]])
+            temp = Top5
+        if age == '18-29 ans':
+            Top5 = Top5.sort_values(by='females_18age_avg_vote', ascending=False)
+            Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
+        if age == '30-44 ans':
+            Top5 = Top5.sort_values(by='females_30age_avg_vote', ascending=False)
+            Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
+        if age == '+ de 45 ans':
+            Top5 = Top5.sort_values(by='females_45age_avg_vote', ascending=False)
+            Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
+
+    if sex == 'Homme':
+        if age == '18-29 ans':
+            Mask.insert(1, 'males_18age_avg_vote', note)
+            my_columns.append('males_18age_avg_vote')
+        if age == '30-44 ans':
+            Mask.insert(1, 'males_30age_avg_vote', note)
+            my_columns.append('males_30age_avg_vote')
+        if age == '+ de 45 ans':
+            Mask.insert(1, 'males_45age_avg_vote', note)
+            my_columns.append('males_45age_avg_vote')
+        samples = df_user[my_columns]
+        dataflix = NearestNeighbors(n_neighbors=50)
+        dataflix.fit(samples.iloc[:, 1:])
+        temp = pd.DataFrame()
+        for i in range(50):
+            indice_recommandation = dataflix.kneighbors(Mask)[1][0][i]
+            picsou = samples.iloc[indice_recommandation, :][0]
+            Top5 = pd.concat([temp, df_user[df_user['imdb_title_id'] == picsou]])
+            temp = Top5
+        if age == '18-29 ans':
+            Top5 = Top5.sort_values(by='males_18age_avg_vote', ascending=False)
+            Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
+        if age == '30-44 ans':
+            Top5 = Top5.sort_values(by='males_30age_avg_vote', ascending=False)
+            Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
+        if age == '+ de 45 ans':
+            Top5 = Top5.sort_values(by='males_45age_avg_vote', ascending=False)
+            Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
+
+    if sex == 'Peu importe':
+        if age == '18-29 ans':
+            Mask.insert(1, 'allgenders_18age_avg_vote', note)
+            my_columns.append('allgenders_18age_avg_vote')
+        if age == '30-44 ans':
+            Mask.insert(1, 'allgenders_30age_avg_vote', note)
+            my_columns.append('allgenders_30age_avg_vote')
+        if age == '+ de 45 ans':
+            Mask.insert(1, 'allgenders_45age_avg_vote', note)
+            my_columns.append('allgenders_45age_avg_vote')
+        samples = df_user[my_columns]
+        dataflix = NearestNeighbors(n_neighbors=50)
+        dataflix.fit(samples.iloc[:, 1:])
+        temp = pd.DataFrame()
+        for i in range(50):
+            indice_recommandation = dataflix.kneighbors(Mask)[1][0][i]
+            picsou = samples.iloc[indice_recommandation, :][0]
+            Top5 = pd.concat([temp, df_user[df_user['imdb_title_id'] == picsou]])
+            temp = Top5
+        if age == '18-29 ans':
+            Top5 = Top5.sort_values(by='allgenders_18age_avg_vote', ascending=False)
+            Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
+        if age == '30-44 ans':
+            Top5 = Top5.sort_values(by='allgenders_30age_avg_vote', ascending=False)
+            Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
+        if age == '+ de 45 ans':
+            Top5 = Top5.sort_values(by='allgenders_45age_avg_vote', ascending=False)
+            Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
+    return Top5
+
+
+
+
+
+@st.cache(suppress_st_warning=True)
+def api_request(snip):
+    url = "https://imdb-internet-movie-database-unofficial.p.rapidapi.com/film/" + snip
+    headers = {
+        'x-rapidapi-host': "imdb-internet-movie-database-unofficial.p.rapidapi.com",
+        'x-rapidapi-key': "deaf55a4eemsh7c2792b225d2a3cp123471jsn98f0d82fd8f8"
+    }
+    response = requests.request("GET", url, headers=headers)
+    return (response.text)
+
+
+@st.cache(persist=True)
+def token(string):
+    start = 0
+    i = 0
+    token_list = []
+    for x in range(0, len(string)):
+        if '"' == string[i:i + 1][0]:
+            token_list.append(string[start:i + 1])
+            start = i + 1
+        i += 1
+    token_list.append(string[start:i + 1])
+    return token_list[27]
+
+
+@st.cache
+def token_video(string):
+    start = 0
+    i = 0
+    token_list = []
+    for x in range(0, len(string)):
+        if '"' == string[i:i + 1][0]:
+            token_list.append(string[start:i + 1])
+            start = i + 1
+        i += 1
+    token_list.append(string[start:i + 1])
+    return token_list[41]
+
+@st.cache(persist=True)
+def cleaner(parsed):
+    parsed = parsed.replace('poster', '')
+    parsed = parsed.replace('"', '')
+    parsed = parsed.replace(',', '')
+    parsed = parsed.replace('\\', '')
+    parsed = parsed.lstrip(':')
+    return parsed
+
+
+@st.cache
+def cleaner_video(parsed):
+    parsed = parsed.replace('link', '')
+    parsed = parsed.replace('"', '')
+    parsed = parsed.replace(',', '')
+    parsed = parsed.replace('\\', '')
+    parsed = parsed.lstrip(':')
+    return parsed
+
+@st.cache
+def list_parser_video(liste):
+    url_list = []
+    longueur = 0
+    for i in range(len(liste)):
+        raw = api_request(liste[i])
+        parsed = token_video(raw)
+        clean_url = cleaner_video(parsed)
+        url_list.append(clean_url)
+    if len(url_list) >= 10:
+        longueur = 10
+    else:
+        longueur = len(url_list)
+    for x in range(1, longueur + 1):
+        if url_list[x - 1] == "":
+            url_list[x - 1] = "https://www.youtube.com/watch?v=zLUEydTltHA"
+    return url_list
+
+@st.cache(persist=True)
+def list_parser(liste):
+    url_list = []
+    longueur = 0
+    for i in range(len(liste)):
+        raw = api_request(liste[i])
+        parsed = token(raw)
+        clean_url = cleaner(parsed)
+        url_list.append(clean_url)
+    if len(url_list) >=10:
+        longueur = 10
+    else:
+        longueur = len(url_list)
+    for x in range(1, longueur + 1):
+        if url_list[x - 1] == "":
+            url_list[x - 1] = "https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/image.png?raw=true"
+
+    return url_list
+
+
+@st.cache(persist=True)
+def list_parser_bis(liste):
+    url_list = []
+    for i in range(len(liste)):
+        raw = api_request(liste[i])
+        parsed = token(raw)
+        clean_url = cleaner(parsed)
+        url_list.append(clean_url)
+    for x in range(1, len(url_list) + 1):
+        if url_list[x - 1] != "":
+            globals()['poster%s' % x] = url_list[x - 1]
+        else:
+            globals()[
+                'poster%s' % x] = "https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/image.png?raw=true"
+    return url_list, poster1, poster2, poster3
+
 if vue == 'Accueil':
     st.markdown(
         "<h3 style='text-align: center; color: black; size = 0'>Tu es à court d\'idée ? Tu ne sais plus quoi regarder ? Alors passe à la partie Recommandations, nous allons t\'aider !</h3>",
@@ -53,15 +399,6 @@ if vue == 'Recommandations':
     with st.spinner(attente):
         time.sleep(5)
 
-    @st.cache(persist=True)
-    def csv(path):
-        df_movies = pd.read_csv(path)
-        df_movies.drop(['Unnamed: 0'], axis=1, inplace=True)
-        return df_movies
-
-
-    df_movies = csv('https://raw.githubusercontent.com/KoxNoob/Recommandation-Films-WCS/master/df_movies.csv')
-
     ###### Définition des fonctions ######
 
     sex = st.sidebar.selectbox('Ton sexe ?',
@@ -83,326 +420,7 @@ if vue == 'Recommandations':
     annee_min = values[0]
     annee_max = values[1]
 
-
-    @st.cache
-    # Séparation du df en fonction du sexe
-    def df_sexe(sex, df):
-        if sex == 'Femme':
-            df_female = df_movies[['imdb_title_id', 'title', 'year', 'genre 1', 'duration',
-                                   'average_votes', 'females_18age_avg_vote',
-                                   'females_30age_avg_vote', 'females_45age_avg_vote', 'director',
-                                   'actor_1', 'actor_2', 'description', 'g_Action', 'g_Adult',
-                                   'g_Adventure', 'g_Animation', 'g_Biography', 'g_Comedy', 'g_Crime',
-                                   'g_Documentary', 'g_Drama', 'g_Family', 'g_Fantasy', 'g_Film-Noir',
-                                   'g_History', 'g_Horror', 'g_Music', 'g_Musical', 'g_Mystery',
-                                   'g_Romance', 'g_Sci-Fi', 'g_Sport', 'g_Thriller', 'g_War', 'g_Western']]
-            return df_female
-        elif sex == 'Homme':
-            df_male = df_movies[['imdb_title_id', 'title', 'year', 'genre 1', 'duration',
-                                 'average_votes', 'males_18age_avg_vote',
-                                 'males_30age_avg_vote', 'males_45age_avg_vote', 'director',
-                                 'actor_1', 'actor_2', 'description', 'g_Action', 'g_Adult',
-                                 'g_Adventure', 'g_Animation', 'g_Biography', 'g_Comedy', 'g_Crime',
-                                 'g_Documentary', 'g_Drama', 'g_Family', 'g_Fantasy', 'g_Film-Noir',
-                                 'g_History', 'g_Horror', 'g_Music', 'g_Musical', 'g_Mystery',
-                                 'g_Romance', 'g_Sci-Fi', 'g_Sport', 'g_Thriller', 'g_War', 'g_Western']]
-            return df_male
-        else:
-            df_all = df_movies[['imdb_title_id', 'title', 'year', 'genre 1', 'duration',
-                                'average_votes', 'allgenders_18age_avg_vote',
-                                'allgenders_30age_avg_vote', 'allgenders_45age_avg_vote',
-                                'director', 'actor_1', 'actor_2', 'description', 'g_Action', 'g_Adult',
-                                'g_Adventure', 'g_Animation', 'g_Biography', 'g_Comedy', 'g_Crime',
-                                'g_Documentary', 'g_Drama', 'g_Family', 'g_Fantasy', 'g_Film-Noir',
-                                'g_History', 'g_Horror', 'g_Music', 'g_Musical', 'g_Mystery',
-                                'g_Romance', 'g_Sci-Fi', 'g_Sport', 'g_Thriller', 'g_War', 'g_Western']]
-            return df_all
-
-
     df_user = df_sexe(sex, df_movies)
-
-
-    @st.cache(allow_output_mutation=True)
-    def recommandation(sex, age, genre, note):
-        global reco
-        Mask = pd.DataFrame()
-        my_columns = []
-        Top5 = pd.DataFrame()
-        samples = pd.DataFrame()
-        if genre == 'Biography':
-            Mask = pd.DataFrame({'g_Biography': [1]})
-            my_columns = ['imdb_title_id', 'g_Biography']
-
-        if genre == 'Drama':
-            Mask = pd.DataFrame({'g_Drama': [1]})
-            my_columns = ['imdb_title_id', 'g_Drama']
-
-        if genre == 'Adventure':
-            Mask = pd.DataFrame({'g_Adventure': [1]})
-            my_columns = ['imdb_title_id', 'g_Adventure']
-
-        if genre == 'History':
-            Mask = pd.DataFrame({'g_History': [1]})
-            my_columns = ['imdb_title_id', 'g_History']
-
-        if genre == 'Crime':
-            Mask = pd.DataFrame({'g_Crime': [1]})
-            my_columns = ['imdb_title_id', 'g_Crime']
-
-        if genre == 'Western':
-            Mask = pd.DataFrame({'g_Western': [1]})
-            my_columns = ['imdb_title_id', 'g_Western']
-
-        if genre == 'Fantasy':
-            Mask = pd.DataFrame({'g_Fantasy': [1]})
-            my_columns = ['imdb_title_id', 'g_Fantasy']
-
-        if genre == 'Comedy':
-            Mask = pd.DataFrame({'g_Comedy': [1]})
-            my_columns = ['imdb_title_id', 'g_Comedy']
-
-        if genre == 'Horror':
-            Mask = pd.DataFrame({'g_Horror': [1]})
-            my_columns = ['imdb_title_id', 'g_Horror']
-
-        if genre == 'Family':
-            Mask = pd.DataFrame({'g_Family': [1]})
-            my_columns = ['imdb_title_id', 'g_Family']
-
-        if genre == 'Action':
-            Mask = pd.DataFrame({'g_Action': [1]})
-            my_columns = ['imdb_title_id', 'g_Action']
-
-        if genre == 'Romance':
-            Mask = pd.DataFrame({'g_Romance': [1]})
-            my_columns = ['imdb_title_id', 'g_Romance']
-
-        if genre == 'Mystery':
-            Mask = pd.DataFrame({'g_Mystery': [1]})
-            my_columns = ['imdb_title_id', 'g_Mystery']
-
-        if genre == 'Animation':
-            Mask = pd.DataFrame({'g_Animation': [1]})
-            my_columns = ['imdb_title_id', 'g_Animation']
-
-        if genre == 'Sci-Fi':
-            Mask = pd.DataFrame({'g_Sci-Fi': [1]})
-            my_columns = ['imdb_title_id', 'g_Sci-Fi']
-
-        if genre == 'Musical':
-            Mask = pd.DataFrame({'g_Musical': [1]})
-            my_columns = ['imdb_title_id', 'g_Musical']
-
-        if genre == 'Thriller':
-            Mask = pd.DataFrame({'g_Thriller': [1]})
-            my_columns = ['imdb_title_id', 'g_Thriller']
-
-        if genre == 'Music':
-            Mask = pd.DataFrame({'g_Music': [1]})
-            my_columns = ['imdb_title_id', 'g_Music']
-
-        if genre == 'Film-Noir':
-            Mask = pd.DataFrame({'g_Film-Noir': [1]})
-            my_columns = ['imdb_title_id', 'g_Film-Noir']
-
-        if genre == 'War':
-            Mask = pd.DataFrame({'g_War': [1]})
-            my_columns = ['imdb_title_id', 'g_War']
-
-        if genre == 'Sport':
-            Mask = pd.DataFrame({'g_Sport': [1]})
-            my_columns = ['imdb_title_id', 'g_Sport']
-
-        if genre == 'Adult':
-            Mask = pd.DataFrame({'g_Adult': [1]})
-            my_columns = ['imdb_title_id', 'g_Adult']
-
-        if genre == 'Documentary':
-            Mask = pd.DataFrame({'g_Documentary': [1]})
-            my_columns = ['imdb_title_id', 'g_Documentary']
-
-        if sex == 'Femme':
-            if age == '18-29 ans':
-                Mask.insert(1, 'females_18age_avg_vote', note)
-                my_columns.append('females_18age_avg_vote')
-            if age == '30-44 ans':
-                Mask.insert(1, 'females_30age_avg_vote', note)
-                my_columns.append('females_30age_avg_vote')
-            if age == '+ de 45 ans':
-                Mask.insert(1, 'females_45age_avg_vote', note)
-                my_columns.append('females_45age_avg_vote')
-            samples = df_user[my_columns]
-            dataflix = NearestNeighbors(n_neighbors=50)
-            dataflix.fit(samples.iloc[:, 1:])
-            temp = pd.DataFrame()
-            for i in range(50):
-                indice_recommandation = dataflix.kneighbors(Mask)[1][0][i]
-                picsou = samples.iloc[indice_recommandation, :][0]
-                Top5 = pd.concat([temp, df_user[df_user['imdb_title_id'] == picsou]])
-                temp = Top5
-            if age == '18-29 ans':
-                Top5 = Top5.sort_values(by='females_18age_avg_vote', ascending=False)
-                Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
-            if age == '30-44 ans':
-                Top5 = Top5.sort_values(by='females_30age_avg_vote', ascending=False)
-                Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
-            if age == '+ de 45 ans':
-                Top5 = Top5.sort_values(by='females_45age_avg_vote', ascending=False)
-                Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
-
-        if sex == 'Homme':
-            if age == '18-29 ans':
-                Mask.insert(1, 'males_18age_avg_vote', note)
-                my_columns.append('males_18age_avg_vote')
-            if age == '30-44 ans':
-                Mask.insert(1, 'males_30age_avg_vote', note)
-                my_columns.append('males_30age_avg_vote')
-            if age == '+ de 45 ans':
-                Mask.insert(1, 'males_45age_avg_vote', note)
-                my_columns.append('males_45age_avg_vote')
-            samples = df_user[my_columns]
-            dataflix = NearestNeighbors(n_neighbors=50)
-            dataflix.fit(samples.iloc[:, 1:])
-            temp = pd.DataFrame()
-            for i in range(50):
-                indice_recommandation = dataflix.kneighbors(Mask)[1][0][i]
-                picsou = samples.iloc[indice_recommandation, :][0]
-                Top5 = pd.concat([temp, df_user[df_user['imdb_title_id'] == picsou]])
-                temp = Top5
-            if age == '18-29 ans':
-                Top5 = Top5.sort_values(by='males_18age_avg_vote', ascending=False)
-                Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
-            if age == '30-44 ans':
-                Top5 = Top5.sort_values(by='males_30age_avg_vote', ascending=False)
-                Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
-            if age == '+ de 45 ans':
-                Top5 = Top5.sort_values(by='males_45age_avg_vote', ascending=False)
-                Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
-
-        if sex == 'Peu importe':
-            if age == '18-29 ans':
-                Mask.insert(1, 'allgenders_18age_avg_vote', note)
-                my_columns.append('allgenders_18age_avg_vote')
-            if age == '30-44 ans':
-                Mask.insert(1, 'allgenders_30age_avg_vote', note)
-                my_columns.append('allgenders_30age_avg_vote')
-            if age == '+ de 45 ans':
-                Mask.insert(1, 'allgenders_45age_avg_vote', note)
-                my_columns.append('allgenders_45age_avg_vote')
-            samples = df_user[my_columns]
-            dataflix = NearestNeighbors(n_neighbors=50)
-            dataflix.fit(samples.iloc[:, 1:])
-            temp = pd.DataFrame()
-            for i in range(50):
-                indice_recommandation = dataflix.kneighbors(Mask)[1][0][i]
-                picsou = samples.iloc[indice_recommandation, :][0]
-                Top5 = pd.concat([temp, df_user[df_user['imdb_title_id'] == picsou]])
-                temp = Top5
-            if age == '18-29 ans':
-                Top5 = Top5.sort_values(by='allgenders_18age_avg_vote', ascending=False)
-                Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
-            if age == '30-44 ans':
-                Top5 = Top5.sort_values(by='allgenders_30age_avg_vote', ascending=False)
-                Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
-            if age == '+ de 45 ans':
-                Top5 = Top5.sort_values(by='allgenders_45age_avg_vote', ascending=False)
-                Top5 = Top5[Top5['year'].between(annee_min, annee_max)]
-        return Top5
-
-
-    @st.cache(suppress_st_warning=True)
-    def api_request(snip):
-        url = "https://imdb-internet-movie-database-unofficial.p.rapidapi.com/film/" + snip
-        headers = {
-            'x-rapidapi-host': "imdb-internet-movie-database-unofficial.p.rapidapi.com",
-            'x-rapidapi-key': "deaf55a4eemsh7c2792b225d2a3cp123471jsn98f0d82fd8f8"
-        }
-        response = requests.request("GET", url, headers=headers)
-        return (response.text)
-
-
-    @st.cache(persist=True)
-    def token(string):
-        start = 0
-        i = 0
-        token_list = []
-        for x in range(0, len(string)):
-            if '"' == string[i:i + 1][0]:
-                token_list.append(string[start:i + 1])
-                start = i + 1
-            i += 1
-        token_list.append(string[start:i + 1])
-        return token_list[27]
-
-
-    @st.cache
-    def token_video(string):
-        start = 0
-        i = 0
-        token_list = []
-        for x in range(0, len(string)):
-            if '"' == string[i:i + 1][0]:
-                token_list.append(string[start:i + 1])
-                start = i + 1
-            i += 1
-        token_list.append(string[start:i + 1])
-        return token_list[41]
-
-    @st.cache(persist=True)
-    def cleaner(parsed):
-        parsed = parsed.replace('poster', '')
-        parsed = parsed.replace('"', '')
-        parsed = parsed.replace(',', '')
-        parsed = parsed.replace('\\', '')
-        parsed = parsed.lstrip(':')
-        return parsed
-
-
-    @st.cache
-    def cleaner_video(parsed):
-        parsed = parsed.replace('link', '')
-        parsed = parsed.replace('"', '')
-        parsed = parsed.replace(',', '')
-        parsed = parsed.replace('\\', '')
-        parsed = parsed.lstrip(':')
-        return parsed
-
-    @st.cache
-    def list_parser_video(liste):
-        url_list = []
-        longueur = 0
-        for i in range(len(liste)):
-            raw = api_request(liste[i])
-            parsed = token_video(raw)
-            clean_url = cleaner_video(parsed)
-            url_list.append(clean_url)
-        if len(url_list) >= 10:
-            longueur = 10
-        else:
-            longueur = len(url_list)
-        for x in range(1, longueur + 1):
-            if url_list[x - 1] == "":
-                url_list[x - 1] = "https://www.youtube.com/watch?v=zLUEydTltHA"
-        return url_list
-
-    @st.cache(persist=True)
-    def list_parser(liste):
-        url_list = []
-        longueur = 0
-        for i in range(len(liste)):
-            raw = api_request(liste[i])
-            parsed = token(raw)
-            clean_url = cleaner(parsed)
-            url_list.append(clean_url)
-        if len(url_list) >=10:
-            longueur = 10
-        else:
-            longueur = len(url_list)
-        for x in range(1, longueur + 1):
-            if url_list[x - 1] == "":
-                url_list[x - 1] = "https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/image.png?raw=true"
-
-        return url_list
 
     lenght = True
     reco = recommandation(sex, age, genre, note)
@@ -412,7 +430,6 @@ if vue == 'Recommandations':
     parsed_list = list_parser(
         list(reco['imdb_title_id'].unique()))
     parsed_list_video = list_parser_video(list(reco['imdb_title_id'].unique()))
-
     if st.sidebar.button('Afficher les films du Top 6 à 10'):
         display_min += 5
         display_max += 5
@@ -510,21 +527,11 @@ if vue == 'Recommandations':
 
 if vue == 'Administrateur':
     mdp = st.sidebar.text_input("Veuillez entrer votre mot de passe", value ="")
-    #if mdp == "" :
-     #   st.write("Toto")
 
     if mdp == "WCS":
         st.sidebar.title("Menu Administrateur")
         admin = st.sidebar.selectbox('', ('Statistiques Générales', 'Focus sur un film'), 0)
         if admin == 'Statistiques Générales':
-            @st.cache(persist=True)
-            def csv(path):
-                df_movies = pd.read_csv(path)
-                df_movies.drop(['Unnamed: 0'], axis=1, inplace=True)
-                return df_movies
-
-
-            df_movies = csv('https://raw.githubusercontent.com/KoxNoob/Recommandation-Films-WCS/master/df_movies.csv')
             pays = pd.read_csv('https://raw.githubusercontent.com/KoxNoob/Recommandation-Films-WCS/master/df_country.csv')
 
             # fusion avec df_movies
@@ -647,278 +654,187 @@ if vue == 'Administrateur':
                 st.plotly_chart(fig, use_container_width=True)
 
         if admin == 'Focus sur un film':
-            @st.cache(persist=True)
-            def csv(path):
-                df_movies = pd.read_csv(path)
-                df_movies.drop(['Unnamed: 0'], axis=1, inplace=True)
-                return df_movies
-
-
-            df_movies = csv('https://raw.githubusercontent.com/KoxNoob/Recommandation-Films-WCS/master/df_movies.csv')
-
-
-            @st.cache(persist=True)
-            def api_request(snip):
-                url = "https://imdb-internet-movie-database-unofficial.p.rapidapi.com/film/" + snip
-                headers = {
-                    'x-rapidapi-host': "imdb-internet-movie-database-unofficial.p.rapidapi.com",
-                    'x-rapidapi-key': "deaf55a4eemsh7c2792b225d2a3cp123471jsn98f0d82fd8f8"
-                }
-                response = requests.request("GET", url, headers=headers)
-                return (response.text)
-
-
-            @st.cache(persist=True)
-            def token(string):
-                start = 0
-                i = 0
-                token_list = []
-                for x in range(0, len(string)):
-                    if '"' == string[i:i + 1][0]:
-                        token_list.append(string[start:i + 1])
-                        start = i + 1
-                    i += 1
-                token_list.append(string[start:i + 1])
-                return token_list[27]
-
-
-            def token_video(string):
-                start = 0
-                i = 0
-                token_list = []
-                for x in range(0, len(string)):
-                    if '"' == string[i:i + 1][0]:
-                        token_list.append(string[start:i + 1])
-                        start = i + 1
-                    i += 1
-                token_list.append(string[start:i + 1])
-                return token_list[41]
-
-            @st.cache(persist=True)
-            def cleaner(parsed):
-                parsed = parsed.replace('poster', '')
-                parsed = parsed.replace('"', '')
-                parsed = parsed.replace(',', '')
-                parsed = parsed.replace('\\', '')
-                parsed = parsed.lstrip(':')
-                return parsed
-
-            def cleaner_video(parsed):
-                parsed = parsed.replace('link', '')
-                parsed = parsed.replace('"', '')
-                parsed = parsed.replace(',', '')
-                parsed = parsed.replace('\\', '')
-                parsed = parsed.lstrip(':')
-                return parsed
-
-            @st.cache(persist=True)
-            def list_parser_bis(liste):
-                url_list = []
-                for i in range(len(liste)):
-                    raw = api_request(liste[i])
-                    parsed = token(raw)
-                    clean_url = cleaner(parsed)
-                    url_list.append(clean_url)
-                for x in range(1, len(url_list) + 1):
-                    if url_list[x - 1] != "":
-                        globals()['poster%s' % x] = url_list[x - 1]
-                    else:
-                        globals()[
-                            'poster%s' % x] = "https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/image.png?raw=true"
-                return url_list, poster1, poster2, poster3
-
-            def list_parser_video(liste):
-                url_list = []
-                longueur = 0
-                for i in range(len(liste)):
-                    raw = api_request(liste[i])
-                    parsed = token_video(raw)
-                    clean_url = cleaner_video(parsed)
-                    url_list.append(clean_url)
-                if len(url_list) >= 10:
-                    longueur = 10
-                else:
-                    longueur = len(url_list)
-                for x in range(1, longueur + 1):
-                    if url_list[x - 1] == "":
-                        url_list[x - 1] = "https://www.youtube.com/watch?v=zLUEydTltHA"
-
-                return url_list
             # Focus sur un film
             title = st.text_input('Entrez un titre de film', 'Deadpool')
             top3 = st.sidebar.selectbox("Affichage", ("Généralités", "Top 3 de la même année", "Top 3 du même genre"))
             if top3 == "Généralités":
+                if title in list(df_movies['title']):
+                    # Durée du film
+                    mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
+                    mov_duree = df_movies[df_movies['imdb_title_id'] == mov_imdb]['duration'].values[0]
 
-                # Durée du film
-                mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
-                mov_duree = df_movies[df_movies['imdb_title_id'] == mov_imdb]['duration'].values[0]
+                    fig, ax = plt.subplots(figsize=(10, 3))
+                    x = 0
+                    y = 0
+                    circle = plt.Circle((x, y), radius=1, facecolor='black', edgecolor=(1, 0, 0), linewidth=3)
+                    ax.add_patch(circle)
+                    label = ax.annotate(mov_duree, xy=(x, y), fontsize=45, ha="center", va='center', color='white')
+                    plt.title('Durée (min)', fontsize=20,
+                              fontdict={'verticalalignment': 'baseline', 'horizontalalignment': 'center', 'color': 'black'})
+                    ax.set_aspect('equal')
+                    ax.autoscale_view()
+                    plt.axis('off')
+                    st.pyplot(fig)
 
-                fig, ax = plt.subplots(figsize=(10, 3))
-                x = 0
-                y = 0
-                circle = plt.Circle((x, y), radius=1, facecolor='black', edgecolor=(1, 0, 0), linewidth=3)
-                ax.add_patch(circle)
-                label = ax.annotate(mov_duree, xy=(x, y), fontsize=45, ha="center", va='center', color='white')
-                plt.title('Durée (min)', fontsize=20,
-                          fontdict={'verticalalignment': 'baseline', 'horizontalalignment': 'center', 'color': 'black'})
-                ax.set_aspect('equal')
-                ax.autoscale_view()
-                plt.axis('off')
-                st.pyplot(fig)
+                    # Notes du film sélectionné par sexe et par tranches d'âge
+                    m_18 = df_movies[df_movies['title'] == title]['males_18age_avg_vote'].values[0]
+                    m_30 = df_movies[df_movies['title'] == title]['males_30age_avg_vote'].values[0]
+                    m_45 = df_movies[df_movies['title'] == title]['males_45age_avg_vote'].values.astype(int)[0]
 
-                # Notes du film sélectionné par sexe et par tranches d'âge
-                m_18 = df_movies[df_movies['title'] == title]['males_18age_avg_vote'].values[0]
-                m_30 = df_movies[df_movies['title'] == title]['males_30age_avg_vote'].values[0]
-                m_45 = df_movies[df_movies['title'] == title]['males_45age_avg_vote'].values.astype(int)[0]
+                    f_18 = df_movies[df_movies['title'] == title]['females_18age_avg_vote'].values[0]
+                    f_30 = df_movies[df_movies['title'] == title]['females_30age_avg_vote'].values[0]
+                    f_45 = df_movies[df_movies['title'] == title]['females_45age_avg_vote'].values[0]
 
-                f_18 = df_movies[df_movies['title'] == title]['females_18age_avg_vote'].values[0]
-                f_30 = df_movies[df_movies['title'] == title]['females_30age_avg_vote'].values[0]
-                f_45 = df_movies[df_movies['title'] == title]['females_45age_avg_vote'].values[0]
+                    avg = df_movies[df_movies['title'] == title]['average_votes'].values[0]
 
-                avg = df_movies[df_movies['title'] == title]['average_votes'].values[0]
+                    labels = ['18-30', '30-45', '45 +']
+                    men_means = [m_18, m_30, m_45]
+                    women_means = [f_18, f_30, f_45]
 
-                labels = ['18-30', '30-45', '45 +']
-                men_means = [m_18, m_30, m_45]
-                women_means = [f_18, f_30, f_45]
+                    fig = go.Figure(data=[
+                        go.Bar(name='Hommes', x=labels, y=men_means, marker_color='white', text=men_means,
+                               textposition='outside'),
+                        go.Bar(name='Femmes', x=labels, y=women_means, marker_color='red', text=women_means,
+                               textposition='outside')
+                    ])
 
-                fig = go.Figure(data=[
-                    go.Bar(name='Hommes', x=labels, y=men_means, marker_color='white', text=men_means,
-                           textposition='outside'),
-                    go.Bar(name='Femmes', x=labels, y=women_means, marker_color='red', text=women_means,
-                           textposition='outside')
-                ])
+                    fig.update_layout(template="plotly_dark",
+                                      title_text='Note moyennne en fonction du genre et de la classe d\'âge',
+                                      title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'})
 
-                fig.update_layout(template="plotly_dark",
-                                  title_text='Note moyennne en fonction du genre et de la classe d\'âge',
-                                  title={'y': 0.9, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'})
-
-                # Change the bar mode
-                fig.update_layout(barmode='group', width=500, height=400)
-                fig.update_yaxes(range=[0, 10])
-                st.plotly_chart(fig, use_container_width=True)
-
+                    # Change the bar mode
+                    fig.update_layout(barmode='group', width=500, height=400)
+                    fig.update_yaxes(range=[0, 10])
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.error("Tu as mal écrit le titre du film ou le titre n'est pas présent dans notre base de données.")
             elif top3 == "Top 3 du même genre":
                 # TOP 3 des films du même genre
+                if title in list(df_movies['title']) :
+                    mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
+                    mov_id = df_movies[df_movies['title'] == title].index.values.astype(int)[0]
+                    mov_genre1 = df_movies[df_movies.index == mov_id]['genre 1'].values[0]
+                    Top_genre = df_movies[df_movies['genre 1'] == mov_genre1][
+                        ['imdb_title_id', 'title', 'director', 'year', 'average_votes', 'actor_1', 'actor_2',
+                         'description']].sort_values(by='average_votes',
+                                                     ascending=False).head(3).reset_index(drop=True)
+                    Top_genre.index = Top_genre.index + 1
+                    Top_genre.rename(
+                        columns={'title': 'Titre', 'director': 'Réalisateur', 'year': 'Année', 'average_votes': 'Note'},
+                        inplace=True)
+                    parsed_list, poster1, poster2, poster3 = list_parser_bis(list(Top_genre['imdb_title_id'].unique()))
+                    parsed_list_video = list_parser_video(list(Top_genre['imdb_title_id'].unique()))
+                    st.markdown('## Top 3 des films du même genre : ' + str(mov_genre1))
+                    fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4, 5],
+                                                   columnwidth=[8, 50, 50, 20, 10],
+                                                   header=dict(values=['', 'Titre', 'Réalisateur', 'Année', 'Note'],
+                                                               fill_color='red',
+                                                               line=dict(width=2), font=dict(color='white', size=14)),
+                                                   cells=dict(
+                                                       values=[[1, 2, 3], Top_genre.Titre, Top_genre.Réalisateur,
+                                                               Top_genre.Année,
+                                                               Top_genre.Note],
+                                                       fill_color=['red', 'black'], line=dict(width=2),
+                                                       font=dict(color='white'),
+                                                       height=30))])
 
-                mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
-                mov_id = df_movies[df_movies['title'] == title].index.values.astype(int)[0]
-                mov_genre1 = df_movies[df_movies.index == mov_id]['genre 1'].values[0]
-                Top_genre = df_movies[df_movies['genre 1'] == mov_genre1][
-                    ['imdb_title_id', 'title', 'director', 'year', 'average_votes', 'actor_1', 'actor_2',
-                     'description']].sort_values(by='average_votes',
-                                                 ascending=False).head(3).reset_index(drop=True)
-                Top_genre.index = Top_genre.index + 1
-                Top_genre.rename(
-                    columns={'title': 'Titre', 'director': 'Réalisateur', 'year': 'Année', 'average_votes': 'Note'},
-                    inplace=True)
-                parsed_list, poster1, poster2, poster3 = list_parser_bis(list(Top_genre['imdb_title_id'].unique()))
-                parsed_list_video = list_parser_video(list(Top_genre['imdb_title_id'].unique()))
-                st.markdown('## Top 3 des films du même genre : ' + str(mov_genre1))
-                fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4, 5],
-                                               columnwidth=[8, 50, 50, 20, 10],
-                                               header=dict(values=['', 'Titre', 'Réalisateur', 'Année', 'Note'],
-                                                           fill_color='red',
-                                                           line=dict(width=2), font=dict(color='white', size=14)),
-                                               cells=dict(
-                                                   values=[[1, 2, 3], Top_genre.Titre, Top_genre.Réalisateur,
-                                                           Top_genre.Année,
-                                                           Top_genre.Note],
-                                                   fill_color=['red', 'black'], line=dict(width=2),
-                                                   font=dict(color='white'),
-                                                   height=30))])
+                    fig.update_layout(width=1200, height=200, margin=dict(l=20, r=20, t=0, b=0, pad=0))
+                    st.plotly_chart(fig, use_container_width=True)
+                    st.markdown("----------------------------------------------------------")
+                    st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[0, 1]) + " (" + \
+                                str(Top_genre.iloc[0, 3]) + ")" "</h2>", unsafe_allow_html=True)
+                    st.markdown('<p align="center"><img width="150" height="220" src=' + poster1 + "</p>",
+                                unsafe_allow_html=True)
+                    st.write('Réalisateur : ' + str(Top_genre.iloc[0, 2]))
+                    st.write('Acteurs principaux : ' + str(Top_genre.iloc[0, 5]) + ', ' + str(Top_genre.iloc[0, 6]))
+                    st.write('Synopsis : ' + str(Top_genre.iloc[0, 7]))
+                    st.write("Trailer : [" + str(Top_genre.iloc[0, 1]) + "](" + str(parsed_list_video[0]) + ")")
 
-                fig.update_layout(width=1200, height=200, margin=dict(l=20, r=20, t=0, b=0, pad=0))
-                st.plotly_chart(fig, use_container_width=True)
-                st.markdown("----------------------------------------------------------")
-                st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[0, 1]) + " (" + \
-                            str(Top_genre.iloc[0, 3]) + ")" "</h2>", unsafe_allow_html=True)
-                st.markdown('<p align="center"><img width="150" height="220" src=' + poster1 + "</p>",
-                            unsafe_allow_html=True)
-                st.write('Réalisateur : ' + str(Top_genre.iloc[0, 2]))
-                st.write('Acteurs principaux : ' + str(Top_genre.iloc[0, 5]) + ', ' + str(Top_genre.iloc[0, 6]))
-                st.write('Synopsis : ' + str(Top_genre.iloc[0, 7]))
-                st.write("Trailer : [" + str(Top_genre.iloc[0, 1]) + "](" + str(parsed_list_video[0]) + ")")
+                    st.markdown("----------------------------------------------------------")
+                    st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[1, 1]) + " (" + \
+                                str(Top_genre.iloc[1, 3]) + ")" "</h2>", unsafe_allow_html=True)
+                    st.markdown('<p align="center"><img width="150" height="220" src=' + poster2 + "</p>",
+                                unsafe_allow_html=True)
+                    st.write('Réalisateur : ' + str(Top_genre.iloc[1, 2]))
+                    st.write('Acteurs principaux : ' + str(Top_genre.iloc[1, 5]) + ', ' + str(Top_genre.iloc[1, 6]))
+                    st.write('Synopsis : ' + str(Top_genre.iloc[1, 7]))
+                    st.write("Trailer : [" + str(Top_genre.iloc[1, 1]) + "](" + str(parsed_list_video[1]) + ")")
 
-                st.markdown("----------------------------------------------------------")
-                st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[1, 1]) + " (" + \
-                            str(Top_genre.iloc[1, 3]) + ")" "</h2>", unsafe_allow_html=True)
-                st.markdown('<p align="center"><img width="150" height="220" src=' + poster2 + "</p>",
-                            unsafe_allow_html=True)
-                st.write('Réalisateur : ' + str(Top_genre.iloc[1, 2]))
-                st.write('Acteurs principaux : ' + str(Top_genre.iloc[1, 5]) + ', ' + str(Top_genre.iloc[1, 6]))
-                st.write('Synopsis : ' + str(Top_genre.iloc[1, 7]))
-                st.write("Trailer : [" + str(Top_genre.iloc[1, 1]) + "](" + str(parsed_list_video[1]) + ")")
+                    st.markdown("----------------------------------------------------------")
+                    st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[2, 1]) + " (" + \
+                                str(Top_genre.iloc[2, 3]) + ")" "</h2>", unsafe_allow_html=True)
+                    st.markdown('<p align="center"><img width="150" height="220" src=' + poster3 + "</p>",
+                                unsafe_allow_html=True)
+                    st.write('Réalisateur : ' + str(Top_genre.iloc[2, 2]))
+                    st.write('Acteurs principaux : ' + str(Top_genre.iloc[2, 5]) + ', ' + str(Top_genre.iloc[2, 6]))
+                    st.write('Synopsis : ' + str(Top_genre.iloc[2, 7]))
+                    st.write("Trailer : [" + str(Top_genre.iloc[2, 1]) + "](" + str(parsed_list_video[2]) + ")")
 
-                st.markdown("----------------------------------------------------------")
-                st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[2, 1]) + " (" + \
-                            str(Top_genre.iloc[2, 3]) + ")" "</h2>", unsafe_allow_html=True)
-                st.markdown('<p align="center"><img width="150" height="220" src=' + poster3 + "</p>",
-                            unsafe_allow_html=True)
-                st.write('Réalisateur : ' + str(Top_genre.iloc[2, 2]))
-                st.write('Acteurs principaux : ' + str(Top_genre.iloc[2, 5]) + ', ' + str(Top_genre.iloc[2, 6]))
-                st.write('Synopsis : ' + str(Top_genre.iloc[2, 7]))
-                st.write("Trailer : [" + str(Top_genre.iloc[2, 1]) + "](" + str(parsed_list_video[2]) + ")")
+                else:
+                    st.error("Tu as mal écrit le titre du film ou le titre n'est pas présent dans notre base de données.")
 
             else:
-                # TOP 3 des films de la même année que le film sélectionné
-                mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
-                mov_year = df_movies[df_movies['imdb_title_id'] == mov_imdb]['year'].values[0]
-                Top_year = df_movies[df_movies['year'] == mov_year][
-                    ['imdb_title_id', 'title', 'director', 'average_votes', 'genre 1', 'actor_1', 'actor_2',
-                     'description']].sort_values(by='average_votes',
-                                                 ascending=False).head(
-                    3).reset_index(drop=True)
-                Top_year.index = Top_year.index + 1
-                Top_year.rename(
-                    columns={'title': 'Titre', 'director': 'Réalisateur', 'average_votes': 'Note', 'genre 1': 'Genre'},
-                    inplace=True)
-                parsed_list, poster1, poster2, poster3 = list_parser_bis(list(Top_year['imdb_title_id'].unique()))
-                parsed_list_video = list_parser_video(list(Top_year['imdb_title_id'].unique()))
-                st.markdown('## Top 3 des films de la même année : ' + str(mov_year))
-                fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4],
-                                               columnwidth=[8, 50, 50, 10],
-                                               header=dict(values=['', 'Titre', 'Réalisateur', 'Note'], fill_color='red',
-                                                           line=dict(width=2), font=dict(color='white', size=14)),
-                                               cells=dict(
-                                                   values=[[1, 2, 3], Top_year.Titre, Top_year.Réalisateur, Top_year.Note],
-                                                   fill_color=['red', 'black'], font=dict(color='white', size=[14, 12]),
-                                                   line=dict(width=2), height=30))])
+                if title in list(df_movies['title']) :
+                    # TOP 3 des films de la même année que le film sélectionné
+                    mov_imdb = df_movies[df_movies['title'] == title]['imdb_title_id'].values[0]
+                    mov_year = df_movies[df_movies['imdb_title_id'] == mov_imdb]['year'].values[0]
+                    Top_year = df_movies[df_movies['year'] == mov_year][
+                        ['imdb_title_id', 'title', 'director', 'average_votes', 'genre 1', 'actor_1', 'actor_2',
+                         'description']].sort_values(by='average_votes',
+                                                     ascending=False).head(
+                        3).reset_index(drop=True)
+                    Top_year.index = Top_year.index + 1
+                    Top_year.rename(
+                        columns={'title': 'Titre', 'director': 'Réalisateur', 'average_votes': 'Note', 'genre 1': 'Genre'},
+                        inplace=True)
+                    parsed_list, poster1, poster2, poster3 = list_parser_bis(list(Top_year['imdb_title_id'].unique()))
+                    parsed_list_video = list_parser_video(list(Top_year['imdb_title_id'].unique()))
+                    st.markdown('## Top 3 des films de la même année : ' + str(mov_year))
+                    fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4],
+                                                   columnwidth=[8, 50, 50, 10],
+                                                   header=dict(values=['', 'Titre', 'Réalisateur', 'Note'], fill_color='red',
+                                                               line=dict(width=2), font=dict(color='white', size=14)),
+                                                   cells=dict(
+                                                       values=[[1, 2, 3], Top_year.Titre, Top_year.Réalisateur, Top_year.Note],
+                                                       fill_color=['red', 'black'], font=dict(color='white', size=[14, 12]),
+                                                       line=dict(width=2), height=30))])
 
-                fig.update_layout(width=1200, height=200, margin=dict(l=20, r=20, t=0, b=0, pad=0))
-                st.plotly_chart(fig, use_container_width=True)
-                st.markdown("----------------------------------------------------------")
-                st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[0, 1]) + " (" + \
-                            str(Top_year.iloc[0, 3]) + ")" "</h2>", unsafe_allow_html=True)
-                st.markdown('<p align="center"><img width="150" height="220" src=' + poster1 + "</p>",
-                            unsafe_allow_html=True)
-                st.write('Réalisateur : ' + str(Top_year.iloc[0, 2]))
-                st.write('Genre : ' + str(Top_year.iloc[0, 4]))
-                st.write('Acteurs principaux : ' + str(Top_year.iloc[0, 5]) + ', ' + str(Top_year.iloc[0, 6]))
-                st.write('Synopsis : ' + str(Top_year.iloc[0, 7]))
-                st.write("Trailer : [" + str(Top_year.iloc[0, 1]) + "](" + str(parsed_list_video[0]) + ")")
+                    fig.update_layout(width=1200, height=200, margin=dict(l=20, r=20, t=0, b=0, pad=0))
+                    st.plotly_chart(fig, use_container_width=True)
+                    st.markdown("----------------------------------------------------------")
+                    st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[0, 1]) + " (" + \
+                                str(Top_year.iloc[0, 3]) + ")" "</h2>", unsafe_allow_html=True)
+                    st.markdown('<p align="center"><img width="150" height="220" src=' + poster1 + "</p>",
+                                unsafe_allow_html=True)
+                    st.write('Réalisateur : ' + str(Top_year.iloc[0, 2]))
+                    st.write('Genre : ' + str(Top_year.iloc[0, 4]))
+                    st.write('Acteurs principaux : ' + str(Top_year.iloc[0, 5]) + ', ' + str(Top_year.iloc[0, 6]))
+                    st.write('Synopsis : ' + str(Top_year.iloc[0, 7]))
+                    st.write("Trailer : [" + str(Top_year.iloc[0, 1]) + "](" + str(parsed_list_video[0]) + ")")
 
-                st.markdown("----------------------------------------------------------")
-                st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[1, 1]) + " (" + \
-                            str(Top_year.iloc[1, 3]) + ")" "</h2>", unsafe_allow_html=True)
-                st.markdown('<p align="center"><img width="150" height="220" src=' + poster2 + "</p>",
-                            unsafe_allow_html=True)
-                st.write('Réalisateur : ' + str(Top_year.iloc[1, 2]))
-                st.write('Genre : ' + str(Top_year.iloc[0, 4]))
-                st.write('Acteurs principaux : ' + str(Top_year.iloc[1, 5]) + ', ' + str(Top_year.iloc[1, 6]))
-                st.write('Synopsis : ' + str(Top_year.iloc[1, 7]))
-                st.write("Trailer : [" + str(Top_year.iloc[1, 1]) + "](" + str(parsed_list_video[1]) + ")")
+                    st.markdown("----------------------------------------------------------")
+                    st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[1, 1]) + " (" + \
+                                str(Top_year.iloc[1, 3]) + ")" "</h2>", unsafe_allow_html=True)
+                    st.markdown('<p align="center"><img width="150" height="220" src=' + poster2 + "</p>",
+                                unsafe_allow_html=True)
+                    st.write('Réalisateur : ' + str(Top_year.iloc[1, 2]))
+                    st.write('Genre : ' + str(Top_year.iloc[0, 4]))
+                    st.write('Acteurs principaux : ' + str(Top_year.iloc[1, 5]) + ', ' + str(Top_year.iloc[1, 6]))
+                    st.write('Synopsis : ' + str(Top_year.iloc[1, 7]))
+                    st.write("Trailer : [" + str(Top_year.iloc[1, 1]) + "](" + str(parsed_list_video[1]) + ")")
 
-                st.markdown("----------------------------------------------------------")
-                st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[2, 1]) + " (" + \
-                            str(Top_year.iloc[2, 3]) + ")" "</h2>", unsafe_allow_html=True)
-                st.markdown('<p align="center"><img width="150" height="220" src=' + poster3 + "</p>",
-                            unsafe_allow_html=True)
-                st.write('Réalisateur : ' + str(Top_year.iloc[2, 2]))
-                st.write('Genre : ' + str(Top_year.iloc[0, 4]))
-                st.write('Acteurs principaux : ' + str(Top_year.iloc[2, 5]) + ', ' + str(Top_year.iloc[2, 6]))
-                st.write('Synopsis : ' + str(Top_year.iloc[2, 7]))
-                st.write("Trailer : [" + str(Top_year.iloc[2, 1]) + "](" + str(parsed_list_video[2]) + ")")
-
+                    st.markdown("----------------------------------------------------------")
+                    st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[2, 1]) + " (" + \
+                                str(Top_year.iloc[2, 3]) + ")" "</h2>", unsafe_allow_html=True)
+                    st.markdown('<p align="center"><img width="150" height="220" src=' + poster3 + "</p>",
+                                unsafe_allow_html=True)
+                    st.write('Réalisateur : ' + str(Top_year.iloc[2, 2]))
+                    st.write('Genre : ' + str(Top_year.iloc[0, 4]))
+                    st.write('Acteurs principaux : ' + str(Top_year.iloc[2, 5]) + ', ' + str(Top_year.iloc[2, 6]))
+                    st.write('Synopsis : ' + str(Top_year.iloc[2, 7]))
+                    st.write("Trailer : [" + str(Top_year.iloc[2, 1]) + "](" + str(parsed_list_video[2]) + ")")
+                else:
+                    st.error("Tu as mal écrit le titre du film ou le titre n'est pas présent dans notre base de données.")
     elif (mdp != "WCS") and (mdp !="") :
         st.error("Game Over. Try Again !")
         st.image("https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/papiers-peints-vecteur-message-de-pixel-game-over.jpg.jpg?raw=true")
