@@ -9,6 +9,7 @@ import requests
 from sklearn.neighbors import NearestNeighbors
 import plotly.express as px
 import plotly.graph_objects as go
+import io
 
 read_and_cache_csv = st.cache(pd.read_csv)
 display_min = 0
@@ -334,6 +335,19 @@ if vue == 'Recommandations':
         return token_list[27]
 
 
+    @st.cache
+    def token_video(string):
+        start = 0
+        i = 0
+        token_list = []
+        for x in range(0, len(string)):
+            if '"' == string[i:i + 1][0]:
+                token_list.append(string[start:i + 1])
+                start = i + 1
+            i += 1
+        token_list.append(string[start:i + 1])
+        return token_list[41]
+
     @st.cache(persist=True)
     def cleaner(parsed):
         parsed = parsed.replace('poster', '')
@@ -343,6 +357,33 @@ if vue == 'Recommandations':
         parsed = parsed.lstrip(':')
         return parsed
 
+
+    @st.cache
+    def cleaner_video(parsed):
+        parsed = parsed.replace('link', '')
+        parsed = parsed.replace('"', '')
+        parsed = parsed.replace(',', '')
+        parsed = parsed.replace('\\', '')
+        parsed = parsed.lstrip(':')
+        return parsed
+
+    @st.cache
+    def list_parser_video(liste):
+        url_list = []
+        longueur = 0
+        for i in range(len(liste)):
+            raw = api_request(liste[i])
+            parsed = token_video(raw)
+            clean_url = cleaner_video(parsed)
+            url_list.append(clean_url)
+        if len(url_list) >= 10:
+            longueur = 10
+        else:
+            longueur = len(url_list)
+        for x in range(1, longueur + 1):
+            if url_list[x - 1] == "":
+                url_list[x - 1] = "https://www.youtube.com/watch?v=zLUEydTltHA"
+        return url_list
 
     @st.cache(persist=True)
     def list_parser(liste):
@@ -370,6 +411,8 @@ if vue == 'Recommandations':
     reco['Note'] = reco['Note'].apply(lambda x: round(x))
     parsed_list = list_parser(
         list(reco['imdb_title_id'].unique()))
+    parsed_list_video = list_parser_video(list(reco['imdb_title_id'].unique()))
+
     if st.sidebar.button('Afficher les films du Top 6 à 10'):
         display_min += 5
         display_max += 5
@@ -410,51 +453,56 @@ if vue == 'Recommandations':
         st.markdown(
             "<h2 style='text-align: center; color: red; size = 0'>" + str(reco.iloc[display_min + 0, 0]) + " (" + \
             str(reco.iloc[display_min + 0, 1]) + ")" "</h2>", unsafe_allow_html=True)
-        st.markdown('<p align="center"><img width="150" height="220" src=' + parsed_list[0] + "</p>", unsafe_allow_html=True)
+        st.markdown('<p align="center"><img width="150" height="220" src=' + parsed_list[display_min+0] + "</p>", unsafe_allow_html=True)
         st.write('Réalisateur : ' + str(reco.iloc[display_min + 0, 8]))
         st.write(
             'Acteurs principaux : ' + str(reco.iloc[display_min + 0, 9]) + ', ' + str(reco.iloc[display_min + 0, 10]))
         st.write('Synopsis : ' + str(reco.iloc[display_min + 0, 11]))
+        st.write("Trailer : [" + str(reco.iloc[display_min + 0, 0]) + "](" + str(parsed_list_video[display_min + 0]) + ")")
         st.markdown("----------------------------------------------------------")
         # CI film n°2
         st.markdown(
             "<h2 style='text-align: center; color: red; size = 0'>" + str(reco.iloc[display_min + 1, 0]) + " (" + \
             str(reco.iloc[display_min + 1, 1]) + ")" "</h2>", unsafe_allow_html=True)
-        st.markdown('<p align="center"><img width="150" height="220" src=' + parsed_list[1] + "</p>", unsafe_allow_html=True)
+        st.markdown('<p align="center"><img width="150" height="220" src=' + parsed_list[display_min+1] + "</p>", unsafe_allow_html=True)
         st.write('Réalisateur : ' + str(reco.iloc[display_min + 1, 8]))
         st.write(
             'Acteurs principaux : ' + str(reco.iloc[display_min + 1, 9]) + ', ' + str(reco.iloc[display_min + 1, 10]))
         st.write('Synopsis : ' + str(reco.iloc[display_min + 1, 11]))
+        st.write("Trailer : [" + str(reco.iloc[display_min + 1, 0]) + "](" + str(parsed_list_video[display_min + 1]) + ")")
         st.markdown("----------------------------------------------------------")
         # CI film n°3
         st.markdown(
             "<h2 style='text-align: center; color: red; size = 0'>" + str(reco.iloc[display_min + 2, 0]) + " (" + \
             str(reco.iloc[display_min + 2, 1]) + ")" "</h2>", unsafe_allow_html=True)
-        st.markdown('<p align="center"><img width="150" height="220" src=' + parsed_list[2] + "</p>", unsafe_allow_html=True)
+        st.markdown('<p align="center"><img width="150" height="220" src=' + parsed_list[display_min+2] + "</p>", unsafe_allow_html=True)
         st.write('Réalisateur : ' + str(reco.iloc[display_min + 2, 8]))
         st.write(
             'Acteurs principaux : ' + str(reco.iloc[display_min + 2, 9]) + ', ' + str(reco.iloc[display_min + 2, 10]))
         st.write('Synopsis : ' + str(reco.iloc[display_min + 2, 11]))
+        st.write("Trailer : [" + str(reco.iloc[display_min + 2, 0]) + "](" + str(parsed_list_video[display_min + 2]) + ")")
         st.markdown("----------------------------------------------------------")
         # CI film n°4
         st.markdown(
             "<h2 style='text-align: center; color: red; size = 0'>" + str(reco.iloc[display_min + 3, 0]) + " (" + \
             str(reco.iloc[display_min + 3, 1]) + ")" "</h2>", unsafe_allow_html=True)
-        st.markdown('<p align="center"><img width="150" height="220" src=' + parsed_list[3] + "</p>", unsafe_allow_html=True)
+        st.markdown('<p align="center"><img width="150" height="220" src=' + parsed_list[display_min+3] + "</p>", unsafe_allow_html=True)
         st.write('Réalisateur : ' + str(reco.iloc[display_min + 3, 8]))
         st.write(
             'Acteurs principaux : ' + str(reco.iloc[display_min + 3, 9]) + ', ' + str(reco.iloc[display_min + 3, 10]))
         st.write('Synopsis : ' + str(reco.iloc[display_min + 3, 11]))
+        st.write("Trailer : [" + str(reco.iloc[display_min + 3, 0]) + "](" + str(parsed_list_video[display_min + 3]) + ")")
         st.markdown("----------------------------------------------------------")
         # CI film n°5
         st.markdown(
             "<h2 style='text-align: center; color: red; size = 0'>" + str(reco.iloc[display_min + 4, 0]) + " (" + \
             str(reco.iloc[display_min + 4, 1]) + ")" "</h2>", unsafe_allow_html=True)
-        st.markdown('<p align="center"><img width="150" height="220" src=' + parsed_list[4] + "</p>", unsafe_allow_html=True)
+        st.markdown('<p align="center"><img width="150" height="220" src=' + parsed_list[display_min+4] + "</p>", unsafe_allow_html=True)
         st.write('Réalisateur : ' + str(reco.iloc[display_min + 4, 8]))
         st.write(
             'Acteurs principaux : ' + str(reco.iloc[display_min + 4, 9]) + ', ' + str(reco.iloc[display_min + 4, 10]))
         st.write('Synopsis : ' + str(reco.iloc[display_min + 4, 11]))
+        st.write("Trailer : [" + str(reco.iloc[display_min + 4, 0]) + "](" + str(parsed_list_video[display_min + 4]) + ")")
         st.markdown("----------------------------------------------------------")
 
     else:
@@ -634,6 +682,18 @@ if vue == 'Administrateur':
                 return token_list[27]
 
 
+            def token_video(string):
+                start = 0
+                i = 0
+                token_list = []
+                for x in range(0, len(string)):
+                    if '"' == string[i:i + 1][0]:
+                        token_list.append(string[start:i + 1])
+                        start = i + 1
+                    i += 1
+                token_list.append(string[start:i + 1])
+                return token_list[41]
+
             @st.cache(persist=True)
             def cleaner(parsed):
                 parsed = parsed.replace('poster', '')
@@ -643,6 +703,13 @@ if vue == 'Administrateur':
                 parsed = parsed.lstrip(':')
                 return parsed
 
+            def cleaner_video(parsed):
+                parsed = parsed.replace('link', '')
+                parsed = parsed.replace('"', '')
+                parsed = parsed.replace(',', '')
+                parsed = parsed.replace('\\', '')
+                parsed = parsed.lstrip(':')
+                return parsed
 
             @st.cache(persist=True)
             def list_parser_bis(liste):
@@ -660,9 +727,25 @@ if vue == 'Administrateur':
                             'poster%s' % x] = "https://github.com/KoxNoob/Recommandation-Films-WCS/blob/master/image.png?raw=true"
                 return url_list, poster1, poster2, poster3
 
+            def list_parser_video(liste):
+                url_list = []
+                longueur = 0
+                for i in range(len(liste)):
+                    raw = api_request(liste[i])
+                    parsed = token_video(raw)
+                    clean_url = cleaner_video(parsed)
+                    url_list.append(clean_url)
+                if len(url_list) >= 10:
+                    longueur = 10
+                else:
+                    longueur = len(url_list)
+                for x in range(1, longueur + 1):
+                    if url_list[x - 1] == "":
+                        url_list[x - 1] = "https://www.youtube.com/watch?v=zLUEydTltHA"
 
+                return url_list
             # Focus sur un film
-            title = st.text_input('Rentrez un titre de film', 'Deadpool')
+            title = st.text_input('Entrez un titre de film', 'Deadpool')
             top3 = st.sidebar.selectbox("Affichage", ("Généralités", "Top 3 de la même année", "Top 3 du même genre"))
             if top3 == "Généralités":
 
@@ -729,6 +812,7 @@ if vue == 'Administrateur':
                     columns={'title': 'Titre', 'director': 'Réalisateur', 'year': 'Année', 'average_votes': 'Note'},
                     inplace=True)
                 parsed_list, poster1, poster2, poster3 = list_parser_bis(list(Top_genre['imdb_title_id'].unique()))
+                parsed_list_video = list_parser_video(list(Top_genre['imdb_title_id'].unique()))
                 st.markdown('## Top 3 des films du même genre : ' + str(mov_genre1))
                 fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4, 5],
                                                columnwidth=[8, 50, 50, 20, 10],
@@ -753,6 +837,8 @@ if vue == 'Administrateur':
                 st.write('Réalisateur : ' + str(Top_genre.iloc[0, 2]))
                 st.write('Acteurs principaux : ' + str(Top_genre.iloc[0, 5]) + ', ' + str(Top_genre.iloc[0, 6]))
                 st.write('Synopsis : ' + str(Top_genre.iloc[0, 7]))
+                st.write("Trailer : [" + str(Top_genre.iloc[0, 1]) + "](" + str(parsed_list_video[0]) + ")")
+
                 st.markdown("----------------------------------------------------------")
                 st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[1, 1]) + " (" + \
                             str(Top_genre.iloc[1, 3]) + ")" "</h2>", unsafe_allow_html=True)
@@ -761,6 +847,8 @@ if vue == 'Administrateur':
                 st.write('Réalisateur : ' + str(Top_genre.iloc[1, 2]))
                 st.write('Acteurs principaux : ' + str(Top_genre.iloc[1, 5]) + ', ' + str(Top_genre.iloc[1, 6]))
                 st.write('Synopsis : ' + str(Top_genre.iloc[1, 7]))
+                st.write("Trailer : [" + str(Top_genre.iloc[1, 1]) + "](" + str(parsed_list_video[1]) + ")")
+
                 st.markdown("----------------------------------------------------------")
                 st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_genre.iloc[2, 1]) + " (" + \
                             str(Top_genre.iloc[2, 3]) + ")" "</h2>", unsafe_allow_html=True)
@@ -769,6 +857,7 @@ if vue == 'Administrateur':
                 st.write('Réalisateur : ' + str(Top_genre.iloc[2, 2]))
                 st.write('Acteurs principaux : ' + str(Top_genre.iloc[2, 5]) + ', ' + str(Top_genre.iloc[2, 6]))
                 st.write('Synopsis : ' + str(Top_genre.iloc[2, 7]))
+                st.write("Trailer : [" + str(Top_genre.iloc[2, 1]) + "](" + str(parsed_list_video[2]) + ")")
 
             else:
                 # TOP 3 des films de la même année que le film sélectionné
@@ -784,6 +873,7 @@ if vue == 'Administrateur':
                     columns={'title': 'Titre', 'director': 'Réalisateur', 'average_votes': 'Note', 'genre 1': 'Genre'},
                     inplace=True)
                 parsed_list, poster1, poster2, poster3 = list_parser_bis(list(Top_year['imdb_title_id'].unique()))
+                parsed_list_video = list_parser_video(list(Top_year['imdb_title_id'].unique()))
                 st.markdown('## Top 3 des films de la même année : ' + str(mov_year))
                 fig = go.Figure(data=[go.Table(columnorder=[1, 2, 3, 4],
                                                columnwidth=[8, 50, 50, 10],
@@ -805,6 +895,8 @@ if vue == 'Administrateur':
                 st.write('Genre : ' + str(Top_year.iloc[0, 4]))
                 st.write('Acteurs principaux : ' + str(Top_year.iloc[0, 5]) + ', ' + str(Top_year.iloc[0, 6]))
                 st.write('Synopsis : ' + str(Top_year.iloc[0, 7]))
+                st.write("Trailer : [" + str(Top_year.iloc[0, 1]) + "](" + str(parsed_list_video[0]) + ")")
+
                 st.markdown("----------------------------------------------------------")
                 st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[1, 1]) + " (" + \
                             str(Top_year.iloc[1, 3]) + ")" "</h2>", unsafe_allow_html=True)
@@ -814,6 +906,8 @@ if vue == 'Administrateur':
                 st.write('Genre : ' + str(Top_year.iloc[0, 4]))
                 st.write('Acteurs principaux : ' + str(Top_year.iloc[1, 5]) + ', ' + str(Top_year.iloc[1, 6]))
                 st.write('Synopsis : ' + str(Top_year.iloc[1, 7]))
+                st.write("Trailer : [" + str(Top_year.iloc[1, 1]) + "](" + str(parsed_list_video[1]) + ")")
+
                 st.markdown("----------------------------------------------------------")
                 st.markdown("<h2 style='text-align: center; color: red; size = 0'>" + str(Top_year.iloc[2, 1]) + " (" + \
                             str(Top_year.iloc[2, 3]) + ")" "</h2>", unsafe_allow_html=True)
@@ -823,6 +917,7 @@ if vue == 'Administrateur':
                 st.write('Genre : ' + str(Top_year.iloc[0, 4]))
                 st.write('Acteurs principaux : ' + str(Top_year.iloc[2, 5]) + ', ' + str(Top_year.iloc[2, 6]))
                 st.write('Synopsis : ' + str(Top_year.iloc[2, 7]))
+                st.write("Trailer : [" + str(Top_year.iloc[2, 1]) + "](" + str(parsed_list_video[2]) + ")")
 
     elif (mdp != "WCS") and (mdp !="") :
         st.error("Game Over. Try Again !")
