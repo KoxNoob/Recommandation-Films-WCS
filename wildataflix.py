@@ -707,7 +707,7 @@ if vue == 'Administrateur':
                     fig.update_yaxes(range=[0, 10])
                     st.plotly_chart(fig, use_container_width=True)
                 else:
-                    st.error("Tu as mal écrit le titre du film ou le titre n'est pas présent dans notre base de données.")
+                    st.error("Vous avez mal écrit le titre du film ou le titre n'est pas présent dans notre base de données.")
             elif top3 == "Top 3 du même genre":
                 # TOP 3 des films du même genre
                 if title in list(df_movies['title']) :
